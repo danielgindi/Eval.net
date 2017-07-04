@@ -344,8 +344,6 @@ namespace Eval.net
         {
             var tokens = new List<Token>();
 
-            var token = "";
-
             int i = 0;
 
             for (int len = expression.Length; i < len; i++)
@@ -353,23 +351,8 @@ namespace Eval.net
                 var c = expression[i];
 
                 var isDigit = c >= '0' && c <= '9';
-                var isAlpha = (c >= 'a' && c <= 'z') ||
-                        (c >= 'A' && c <= 'Z');
-                var isVarChars = isDigit || isAlpha || c == '_';
-
-                if (token.Length > 0 && !isVarChars)
-                {
-                    // Probably starting something else, break it down here
-                    tokens.Add(new Token
-                    {
-                        Type = TokenType.Var,
-                        Position = i - token.Length,
-                        Value = token
-                    });
-                    token = "";
-                }
-
-                if ((isDigit || c == '.') && token.Length == 0)
+                
+                if (isDigit || c == '.')
                 {
                     // Starting a number
                     int nextIndex;
@@ -384,9 +367,40 @@ namespace Eval.net
                     continue;
                 }
 
+                var isAlpha = (c >= 'a' && c <= 'z') ||
+                        (c >= 'A' && c <= 'Z');
+                var isVarChars = isDigit || isAlpha || c == '_';
+
                 if (isVarChars)
                 {
-                    token += c;
+                    // Starting a variable name - can start only with A-Z_
+
+                    var token = "";
+
+                    do
+                    {
+                        token += c;
+
+                        i++;
+                        c = expression[i];
+
+                        isVarChars =
+                            (c >= '0' && c <= '9') ||
+                            (c >= 'a' && c <= 'z') ||
+                            (c >= 'A' && c <= 'Z') ||
+                            c == '_';
+                        
+                    } while (isVarChars);
+                    
+                    tokens.Add(new Token
+                    {
+                        Type = TokenType.Var,
+                        Position = i - token.Length,
+                        Value = token
+                    });
+
+                    i--; // Step back to continue loop from correct place
+
                     continue;
                 }
 
@@ -455,18 +469,6 @@ namespace Eval.net
                 }
 
                 throw new FormatException("Unexpected token at index " + i);
-            }
-
-            if (token.Length > 0)
-            {
-                // Add the last token
-                tokens.Add(new Token
-                {
-                    Type = TokenType.Var,
-                    Position = i - token.Length,
-                    Value = token
-                });
-                token = "";
             }
 
             return tokens;
