@@ -377,16 +377,15 @@ namespace Eval.net
 
                     var token = "";
 
-                    do
+                    while (i < len)
                     {
-                        token += c;
-
-                        i++;
                         c = expression[i];
-
                         isVarChars = varNameChars.Contains(c);
+                        if (!isVarChars) break;
 
-                    } while (isVarChars);
+                        token += c;
+                        i++;
+                    }
                     
                     tokens.Add(new Token
                     {
