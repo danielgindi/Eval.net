@@ -342,6 +342,8 @@ namespace Eval.net
 
         internal static List<Token> TokenizeExpression(string expression, EvalConfiguration configuration)
         {
+            var varNameChars = configuration.VarNameChars;
+
             var tokens = new List<Token>();
 
             int i = 0;
@@ -366,10 +368,8 @@ namespace Eval.net
                     i = nextIndex - 1;
                     continue;
                 }
-
-                var isAlpha = (c >= 'a' && c <= 'z') ||
-                        (c >= 'A' && c <= 'Z');
-                var isVarChars = isDigit || isAlpha || c == '_';
+                
+                var isVarChars = varNameChars.Contains(c);
 
                 if (isVarChars)
                 {
@@ -384,12 +384,8 @@ namespace Eval.net
                         i++;
                         c = expression[i];
 
-                        isVarChars =
-                            (c >= '0' && c <= '9') ||
-                            (c >= 'a' && c <= 'z') ||
-                            (c >= 'A' && c <= 'Z') ||
-                            c == '_';
-                        
+                        isVarChars = varNameChars.Contains(c);
+
                     } while (isVarChars);
                     
                     tokens.Add(new Token

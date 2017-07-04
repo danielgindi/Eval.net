@@ -30,11 +30,13 @@ namespace Eval.net
             new string[] { "||" }
         };
 
-        public static readonly string[] DefaultPrefixOperators = new string[] {
+        public static readonly string[] DefaultPrefixOperators = new string[]
+        {
             "!"
         };
 
-        public static readonly string[] DefaultSuffixOperators = new string[] {
+        public static readonly string[] DefaultSuffixOperators = new string[]
+        {
             "!"
         };
 
@@ -119,5 +121,8 @@ namespace Eval.net
                 { "TRUNCATE", args => Convert.ChangeType(Math.Truncate((dynamic)args[0]), type) },
             };
         }
+
+        public static readonly HashSet<char> DefaultVarNameChars =
+            new HashSet<char>("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_".ToCharArray());
     }
 }

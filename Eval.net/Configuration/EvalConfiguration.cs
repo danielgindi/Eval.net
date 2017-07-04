@@ -37,6 +37,8 @@ namespace Eval.net
         
         public string[] PrefixOperators { get; set; }
         public string[] SuffixOperators { get; set; }
+        
+        public HashSet<char> VarNameChars { get; set; }
 
         public Dictionary<string, object> GenericConstants { get; set; }
         public Dictionary<string, EvalFunction> GenericFunctions { get; set; }
@@ -94,6 +96,7 @@ namespace Eval.net
             OperatorOrder = DefaultOperatorOrder;
             PrefixOperators = DefaultPrefixOperators;
             SuffixOperators = DefaultSuffixOperators;
+            VarNameChars = DefaultVarNameChars;
             GenericConstants = new Dictionary<string, object>(DefaultGenericConstants);
             GenericFunctions = new Dictionary<string, EvalFunction>(GetDefaultGenericFunctions(_NumericType));
             Constants = new Dictionary<string, object>();
@@ -106,6 +109,7 @@ namespace Eval.net
             config.OperatorOrder = OperatorOrder;
             config.PrefixOperators = PrefixOperators;
             config.SuffixOperators = SuffixOperators;
+            config.VarNameChars = VarNameChars;
             config.GenericConstants = deep ? new Dictionary<string, object>(GenericConstants) : GenericConstants;
             config.GenericFunctions = deep ? new Dictionary<string, EvalFunction>(GenericFunctions) : GenericFunctions;
             config.Constants = new Dictionary<string, object>(Constants);
