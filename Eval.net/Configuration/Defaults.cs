@@ -123,6 +123,6 @@ namespace Eval.net
         }
 
         public static readonly HashSet<char> DefaultVarNameChars =
-            new HashSet<char>("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_".ToCharArray());
+            new HashSet<char>("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$".ToCharArray());
     }
 }
