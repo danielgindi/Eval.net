@@ -3,7 +3,7 @@ Eval.net
 
 Easily evaluate simple expressions on the go...
 
-This is a port of the (BigEval.js)[https://github.com/aviaryan/BigEval.js] library
+This is a port of the [BigEval.js](https://github.com/aviaryan/BigEval.js) library
  
 Features:
 * Evaluate basic math operators (`5 * (4 / 3)`)
