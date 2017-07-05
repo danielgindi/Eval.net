@@ -37,7 +37,10 @@ namespace Eval.net
         
         public string[] PrefixOperators { get; set; }
         public string[] SuffixOperators { get; set; }
-        
+
+        // https://en.wikipedia.org/wiki/Operator_associativity
+        public HashSet<string> RightAssociativeOps { get; set; }
+
         public HashSet<char> VarNameChars { get; set; }
 
         public Dictionary<string, object> GenericConstants { get; set; }
@@ -96,6 +99,7 @@ namespace Eval.net
             OperatorOrder = DefaultOperatorOrder;
             PrefixOperators = DefaultPrefixOperators;
             SuffixOperators = DefaultSuffixOperators;
+            RightAssociativeOps = DefaultRightAssociativeOps;
             VarNameChars = DefaultVarNameChars;
             GenericConstants = new Dictionary<string, object>(DefaultGenericConstants);
             GenericFunctions = new Dictionary<string, EvalFunction>(GetDefaultGenericFunctions(_NumericType));
@@ -109,6 +113,7 @@ namespace Eval.net
             config.OperatorOrder = OperatorOrder;
             config.PrefixOperators = PrefixOperators;
             config.SuffixOperators = SuffixOperators;
+            config.RightAssociativeOps = RightAssociativeOps;
             config.VarNameChars = VarNameChars;
             config.GenericConstants = deep ? new Dictionary<string, object>(GenericConstants) : GenericConstants;
             config.GenericFunctions = deep ? new Dictionary<string, EvalFunction>(GenericFunctions) : GenericFunctions;

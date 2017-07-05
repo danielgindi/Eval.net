@@ -40,6 +40,11 @@ namespace Eval.net
             "!"
         };
 
+        public static readonly HashSet<string> DefaultRightAssociativeOps = new HashSet<string>(new string[]
+        {
+            "**"
+        });
+
         public static readonly Dictionary<string, object> DefaultGenericConstants = new Dictionary<string, object>
         {
             { "PI", Math.PI },

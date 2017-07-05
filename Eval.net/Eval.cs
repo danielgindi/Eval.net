@@ -111,11 +111,9 @@ namespace Eval.net
             return op;
         }
 
-        internal static int LastIndexOfOpInTokens(List<Token> tokens, string op, int start = 0)
+        internal static int IndexOfOpInTokens(List<Token> tokens, string op)
         {
-            start = start > -1 ? start : 0;
-
-            for (var i = tokens.Count - 1; i >= start; i--)
+            for (var i = 0; i < tokens.Count; i++)
             {
                 var token = tokens[i];
                 if (token.Type == TokenType.Op && Object.Equals(token.Value, op))
@@ -125,7 +123,19 @@ namespace Eval.net
             return -1;
         }
 
-        internal static void LastIndexOfOpArray(List<Token> tokens, string[] ops, out int matchIndex, out string match)
+        internal static int LastIndexOfOpInTokens(List<Token> tokens, string op)
+        {
+            for (var i = tokens.Count - 1; i >= 0; i--)
+            {
+                var token = tokens[i];
+                if (token.Type == TokenType.Op && Object.Equals(token.Value, op))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        internal static void LastIndexOfOpArray(List<Token> tokens, string[] ops, EvalConfiguration config, out int matchIndex, out string match)
         {
             var pos = -1;
             string bestMatch = null;
@@ -133,7 +143,16 @@ namespace Eval.net
             for (var i = 0; i < ops.Length; i++)
             {
                 var item = ops[i];
-                var opIndex = LastIndexOfOpInTokens(tokens, item);
+                int opIndex;
+
+                if (config.RightAssociativeOps.Contains(item))
+                {
+                    opIndex = IndexOfOpInTokens(tokens, item);
+                }
+                else
+                {
+                    opIndex = LastIndexOfOpInTokens(tokens, item);
+                }
 
                 if (opIndex == -1)
                     continue;
@@ -556,7 +575,7 @@ namespace Eval.net
 
                 int pos;
                 string op;
-                LastIndexOfOpArray(tokens, cs, out pos, out op);
+                LastIndexOfOpArray(tokens, cs, configuration, out pos, out op);
 
                 if (pos != -1)
                 {
