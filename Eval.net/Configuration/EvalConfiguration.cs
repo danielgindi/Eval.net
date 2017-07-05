@@ -35,8 +35,8 @@ namespace Eval.net
             }
         }
         
-        public string[] PrefixOperators { get; set; }
-        public string[] SuffixOperators { get; set; }
+        public HashSet<string> PrefixOperators { get; set; }
+        public HashSet<string> SuffixOperators { get; set; }
 
         // https://en.wikipedia.org/wiki/Operator_associativity
         public HashSet<string> RightAssociativeOps { get; set; }

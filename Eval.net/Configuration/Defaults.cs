@@ -30,12 +30,12 @@ namespace Eval.net
             new string[] { "||" }
         };
 
-        public static readonly string[] DefaultPrefixOperators = new string[]
+        public static readonly HashSet<string> DefaultPrefixOperators = new HashSet<string>
         {
             "!"
         };
 
-        public static readonly string[] DefaultSuffixOperators = new string[]
+        public static readonly HashSet<string> DefaultSuffixOperators = new HashSet<string>
         {
             "!"
         };

@@ -584,16 +584,16 @@ namespace Eval.net
                     List<Token> left;
                     List<Token> right;
 
-                    if (IndexOf(prefixOps, op) != -1 || IndexOf(suffixOps, op) != -1)
+                    if (prefixOps.Contains(op) || suffixOps.Contains(op))
                     {
                         left = null;
                         right = null;
 
-                        if (IndexOf(prefixOps, op) != -1 && pos == 0)
+                        if (prefixOps.Contains(op) && pos == 0)
                         {
                             right = tokens.GetRange(pos + 1, tokens.Count - (pos + 1));
                         }
-                        else if (IndexOf(suffixOps, op) != -1 && pos > 0)
+                        else if (suffixOps.Contains(op) && pos > 0)
                         {
                             left = tokens.GetRange(0, pos);
                         }
