@@ -9,6 +9,9 @@ namespace Eval.net
 {
     public partial class EvalConfiguration
     {
+        public delegate object EvalFunctionDelegate(params object[] args);
+        public delegate object ConstProviderDelegate(string varname);
+
         public static readonly EvalConfiguration FloatConfiguration = new EvalConfiguration(typeof(float));
         public static readonly EvalConfiguration DoubleConfiguration = new EvalConfiguration(typeof(double));
         public static readonly EvalConfiguration DecimalConfiguration = new EvalConfiguration(typeof(decimal));
@@ -44,9 +47,11 @@ namespace Eval.net
         public HashSet<char> VarNameChars { get; set; }
 
         public Dictionary<string, object> GenericConstants { get; set; }
-        public Dictionary<string, EvalFunction> GenericFunctions { get; set; }
+        public Dictionary<string, EvalFunctionDelegate> GenericFunctions { get; set; }
         public Dictionary<string, object> Constants { get; set; }
-        public Dictionary<string, EvalFunction> Functions { get; set; }
+        public Dictionary<string, EvalFunctionDelegate> Functions { get; set; }
+
+        public ConstProviderDelegate ConstProvider { get; set; }
 
         public void SetConstant(string name, object value)
         {
@@ -65,11 +70,11 @@ namespace Eval.net
             Constants.Remove(name);
         }
 
-        public void SetFunction(string name, EvalFunction func)
+        public void SetFunction(string name, EvalFunctionDelegate func)
         {
             if (Functions == null)
             {
-                Functions = new Dictionary<string, EvalFunction>();
+                Functions = new Dictionary<string, EvalFunctionDelegate>();
             }
 
             Functions[name] = func;
@@ -102,9 +107,9 @@ namespace Eval.net
             RightAssociativeOps = DefaultRightAssociativeOps;
             VarNameChars = DefaultVarNameChars;
             GenericConstants = new Dictionary<string, object>(DefaultGenericConstants);
-            GenericFunctions = new Dictionary<string, EvalFunction>(GetDefaultGenericFunctions(_NumericType));
+            GenericFunctions = new Dictionary<string, EvalFunctionDelegate>(GetDefaultGenericFunctions(_NumericType));
             Constants = new Dictionary<string, object>();
-            Functions = new Dictionary<string, EvalFunction>();
+            Functions = new Dictionary<string, EvalFunctionDelegate>();
         }
 
         public EvalConfiguration Clone(bool deep = false)
@@ -116,9 +121,10 @@ namespace Eval.net
             config.RightAssociativeOps = RightAssociativeOps;
             config.VarNameChars = VarNameChars;
             config.GenericConstants = deep ? new Dictionary<string, object>(GenericConstants) : GenericConstants;
-            config.GenericFunctions = deep ? new Dictionary<string, EvalFunction>(GenericFunctions) : GenericFunctions;
+            config.GenericFunctions = deep ? new Dictionary<string, EvalFunctionDelegate>(GenericFunctions) : GenericFunctions;
             config.Constants = new Dictionary<string, object>(Constants);
-            config.Functions = new Dictionary<string, EvalFunction>(Functions);
+            config.Functions = new Dictionary<string, EvalFunctionDelegate>(Functions);
+            config.ConstProvider = ConstProvider;
             return config;
         }
     }

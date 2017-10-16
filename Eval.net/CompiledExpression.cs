@@ -31,7 +31,7 @@ namespace Eval.net
             Configuration.RemoveConstant(name);
         }
 
-        public void SetFunction(string name, EvalConfiguration.EvalFunction func)
+        public void SetFunction(string name, EvalConfiguration.EvalFunctionDelegate func)
         {
             Configuration.SetFunction(name, func);
         }

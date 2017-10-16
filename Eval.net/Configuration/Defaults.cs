@@ -9,8 +9,6 @@ namespace Eval.net
 {
     public partial class EvalConfiguration
     {
-        public delegate object EvalFunction(params object[] args);
-
         /// <summary>
         /// Ordering of operators
         /// https://en.wikipedia.org/wiki/Order_of_operations#Programming_languages
@@ -58,9 +56,9 @@ namespace Eval.net
             { "FALSE", false },
         };
 
-        public static Dictionary<string, EvalFunction> GetDefaultGenericFunctions(Type type)
+        public static Dictionary<string, EvalFunctionDelegate> GetDefaultGenericFunctions(Type type)
         {
-            return new Dictionary<string, EvalFunction>
+            return new Dictionary<string, EvalFunctionDelegate>
             {
                 { "ABS", args => Convert.ChangeType(Math.Abs((dynamic)args[0]), type) },
                 { "ACOS", args => Convert.ChangeType(Math.Acos((double)(dynamic)args[0]), type) },

@@ -688,6 +688,13 @@ namespace Eval.net
 
                 case TokenType.Var:
 
+                    if (configuration.ConstProvider != null)
+                    {
+                        var val = configuration.ConstProvider(value);
+                        if (val != null)
+                            return val;
+                    }
+
                     if (configuration.Constants.ContainsKey(value))
                         return configuration.Constants[value];
 
