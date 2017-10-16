@@ -116,10 +116,10 @@ namespace Eval.net
         {
             var config = new EvalConfiguration(NumericType);
             config.OperatorOrder = OperatorOrder;
-            config.PrefixOperators = PrefixOperators;
-            config.SuffixOperators = SuffixOperators;
-            config.RightAssociativeOps = RightAssociativeOps;
-            config.VarNameChars = VarNameChars;
+            config.PrefixOperators = deep ? new HashSet<string>(PrefixOperators) : PrefixOperators;
+            config.SuffixOperators = deep ? new HashSet<string>(SuffixOperators) : SuffixOperators;
+            config.RightAssociativeOps = deep ? new HashSet<string>(RightAssociativeOps) : RightAssociativeOps;
+            config.VarNameChars = deep ? new HashSet<char>(VarNameChars) : VarNameChars;
             config.GenericConstants = deep ? new Dictionary<string, object>(GenericConstants) : GenericConstants;
             config.GenericFunctions = deep ? new Dictionary<string, EvalFunctionDelegate>(GenericFunctions) : GenericFunctions;
             config.Constants = new Dictionary<string, object>(Constants);
