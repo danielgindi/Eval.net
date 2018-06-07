@@ -122,8 +122,8 @@ namespace Eval.net
             config.VarNameChars = deep ? new HashSet<char>(VarNameChars) : VarNameChars;
             config.GenericConstants = deep ? new Dictionary<string, object>(GenericConstants) : GenericConstants;
             config.GenericFunctions = deep ? new Dictionary<string, EvalFunctionDelegate>(GenericFunctions) : GenericFunctions;
-            config.Constants = new Dictionary<string, object>(Constants);
-            config.Functions = new Dictionary<string, EvalFunctionDelegate>(Functions);
+            config.Constants = deep ? new Dictionary<string, object>(Constants) : Constants;
+            config.Functions = deep ? new Dictionary<string, EvalFunctionDelegate>(Functions) : Functions;
             config.ConstProvider = ConstProvider;
             return config;
         }
