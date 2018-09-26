@@ -104,11 +104,23 @@ namespace Eval.net
             {
                 return ((string)(object)a).Length > 0;
             }
+
             if (a is bool)
             {
                 return ((bool)(object)a);
             }
-            return ((IComparable)a).CompareTo(Convert.ChangeType(0, NumericType)) != 0;
+
+            if (a is System.Collections.ICollection)
+            {
+                return (a as System.Collections.ICollection).Count > 0;
+            }
+
+            if (a is Array)
+            {
+                return (a as Array).Length > 0;
+            }
+
+            return !a.Equals(0);
         }
 
         public virtual bool LogicalNot(object a)
