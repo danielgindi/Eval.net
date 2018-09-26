@@ -88,7 +88,9 @@ namespace Eval.net
 
         public virtual bool EqualsTo(object a, object b)
         {
-            return ((IComparable)a).CompareTo(b) == 0;
+            if (a == null && b == null) return true;
+            if ((a == null) != (b == null)) return false;
+            return Object.Equals(a, b);
         }
 
         public virtual bool NotEqualsTo(object a, object b)
