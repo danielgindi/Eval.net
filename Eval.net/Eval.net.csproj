@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Configuration\Ops.cs" />
     <Compile Include="Configuration\Defaults.cs" />
+    <Compile Include="StringConversion.cs" />
     <Compile Include="Eval.cs" />
     <Compile Include="Configuration\EvalConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

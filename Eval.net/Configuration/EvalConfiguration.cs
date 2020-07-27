@@ -16,8 +16,7 @@ namespace Eval.net
         public static readonly EvalConfiguration DoubleConfiguration = new EvalConfiguration(typeof(double));
         public static readonly EvalConfiguration DecimalConfiguration = new EvalConfiguration(typeof(decimal));
 
-        private Type _NumericType;
-        public Type NumericType { get { return _NumericType; } }
+        public Type NumericType { get; private set; }
 
         internal string[] _AllOperators;
 
@@ -52,6 +51,9 @@ namespace Eval.net
         public Dictionary<string, EvalFunctionDelegate> Functions { get; set; }
 
         public ConstProviderDelegate ConstProvider { get; set; }
+
+        public bool AutoParseNumericStrings { get; set; } = true;
+        public IFormatProvider AutoParseNumericStringsFormatProvider { get; set; } = null;
 
         public void SetConstant(string name, object value)
         {
@@ -97,9 +99,11 @@ namespace Eval.net
             Functions.Clear();
         }
 
-        public EvalConfiguration(Type numericType)
+        public EvalConfiguration(Type numericType, bool autoParseNumericStrings = true, IFormatProvider autoParseNumericStringsFormatProvider = null)
         {
-            _NumericType = numericType;
+            this.NumericType = numericType;
+            this.AutoParseNumericStrings = autoParseNumericStrings;
+            this.AutoParseNumericStringsFormatProvider = autoParseNumericStringsFormatProvider;
 
             OperatorOrder = DefaultOperatorOrder;
             PrefixOperators = DefaultPrefixOperators;
@@ -107,7 +111,8 @@ namespace Eval.net
             RightAssociativeOps = DefaultRightAssociativeOps;
             VarNameChars = DefaultVarNameChars;
             GenericConstants = new Dictionary<string, object>(DefaultGenericConstants);
-            GenericFunctions = new Dictionary<string, EvalFunctionDelegate>(GetDefaultGenericFunctions(_NumericType));
+            GenericFunctions = new Dictionary<string, EvalFunctionDelegate>(
+                GetDefaultGenericFunctions(NumericType, AutoParseNumericStrings, AutoParseNumericStringsFormatProvider));
             Constants = new Dictionary<string, object>();
             Functions = new Dictionary<string, EvalFunctionDelegate>();
         }

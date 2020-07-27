@@ -77,6 +77,10 @@ namespace UnitTests
             Assert.AreEqual(
                 (double)Evaluator.Execute("-4^7**2**-2", config),
                 (double)-3);
+
+            Assert.AreEqual(
+                (double)Evaluator.Execute("\"-4\"^7**\"2\"**-2", config),
+                (double)-3);
         }
 
         [TestMethod]

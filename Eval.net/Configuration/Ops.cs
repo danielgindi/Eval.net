@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,34 +36,57 @@ namespace Eval.net
 
                 if (type.Equals(typeof(Int32)))
                     return Int32.Parse((string)value, CultureInfo.InvariantCulture);
+
+                value = StringConversion.OptionallyConvertStringToDouble(value, AutoParseNumericStringsFormatProvider);
             }
 
             return Convert.ChangeType(value, type);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private object FilterArg(object arg)
+        {
+            if (AutoParseNumericStrings)
+            {
+                return StringConversion.OptionallyConvertStringToDouble(arg, AutoParseNumericStringsFormatProvider);
+            }
+
+            return arg;
+        }
+
         public virtual object Add(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return ((dynamic)a + (dynamic)b);
         }
 
         public virtual object Subtract(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return ((dynamic)a - (dynamic)b);
         }
 
         public virtual object Multiply(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return ((dynamic)a * (dynamic)b);
         }
 
         public virtual object Divide(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return ((dynamic)a / (dynamic)b);
         }
 
         public virtual object Pow(object a, object b)
         {
-            var val = Math.Pow((Double)Convert.ChangeType(a, typeof(Double)), (Double)Convert.ChangeType(b, typeof(Double)));
+            a = FilterArg(a);
+            b = FilterArg(b);
+            var val = Math.Pow(Convert.ToDouble(a), Convert.ToDouble(b));
             return Convert.ChangeType(val, NumericType);
         }
 
@@ -132,9 +156,10 @@ namespace Eval.net
 
         public virtual object Factorial(object n)
         {
+            n = FilterArg(n);
+
             object one = Convert.ChangeType(1, NumericType);
             var s = one;
-            var dn = (dynamic)n;
 
             for (object i = Convert.ChangeType(2, NumericType);
                 LessThanOrEqualsTo(i, n);
@@ -148,31 +173,43 @@ namespace Eval.net
 
         public virtual object Mod(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return ((dynamic)a % (dynamic)b);
         }
 
         public virtual object BitShiftLeft(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return Convert.ChangeType((Int64)(dynamic)a << (int)(dynamic)b, NumericType);
         }
 
         public virtual object BitShiftRight(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return Convert.ChangeType((Int64)(dynamic)a >> (int)(dynamic)b, NumericType);
         }
 
         public virtual object BitAnd(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return Convert.ChangeType((Int64)(dynamic)a & (Int64)(dynamic)b, NumericType);
         }
 
         public virtual object BitXor(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return Convert.ChangeType((Int64)(dynamic)a ^ (Int64)(dynamic)b, NumericType);
         }
 
         public virtual object BitOr(object a, object b)
         {
+            a = FilterArg(a);
+            b = FilterArg(b);
             return Convert.ChangeType((Int64)(dynamic)a | (Int64)(dynamic)b, NumericType);
         }
     }
