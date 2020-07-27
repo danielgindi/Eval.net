@@ -81,6 +81,18 @@ namespace UnitTests
             Assert.AreEqual(
                 (double)Evaluator.Execute("\"-4\"^7**\"2\"**-2", config),
                 (double)-3);
+
+            Assert.AreEqual(
+                Evaluator.Execute("\"abc\"+5", config),
+                "abc5");
+
+            Assert.AreEqual(
+                Evaluator.Execute("\"5\"+5", config),
+                "55");
+
+            Assert.AreEqual(
+                (double)Evaluator.Execute("5+\"5\"", config),
+                10);
         }
 
         [TestMethod]
