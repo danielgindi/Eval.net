@@ -56,6 +56,13 @@ namespace Eval.net
 
         public virtual object Add(object a, object b)
         {
+            if (a is string && b is string)
+            {
+                // do not convert them to numbers by mistake.
+                // multiplication could be used to cast to numbers.
+                return (string)a + (string)b;
+            }
+
             a = FilterArg(a);
             b = FilterArg(b);
             return ((dynamic)a + (dynamic)b);
