@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Eval.net
 {
@@ -99,7 +95,14 @@ namespace Eval.net
             Functions.Clear();
         }
 
-        public EvalConfiguration(Type numericType, bool autoParseNumericStrings = true, IFormatProvider autoParseNumericStringsFormatProvider = null)
+        public EvalConfiguration() : this(typeof(double))
+        {
+        }
+
+        public EvalConfiguration(
+            Type numericType, 
+            bool autoParseNumericStrings = true, 
+            IFormatProvider autoParseNumericStringsFormatProvider = null)
         {
             this.NumericType = numericType;
             this.AutoParseNumericStrings = autoParseNumericStrings;
@@ -117,9 +120,15 @@ namespace Eval.net
             Functions = new Dictionary<string, EvalFunctionDelegate>();
         }
 
-        public EvalConfiguration Clone(bool deep = false)
+        public virtual EvalConfiguration Clone(bool deep = false)
         {
-            var config = new EvalConfiguration(NumericType);
+            return Clone<EvalConfiguration>(deep);
+        }
+
+        public T Clone<T>(bool deep = false) where T : EvalConfiguration, new()
+        {
+            var config = new T();
+            config.NumericType = NumericType;
             config.OperatorOrder = OperatorOrder;
             config.PrefixOperators = deep ? new HashSet<string>(PrefixOperators) : PrefixOperators;
             config.SuffixOperators = deep ? new HashSet<string>(SuffixOperators) : SuffixOperators;
