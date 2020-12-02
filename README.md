@@ -17,6 +17,12 @@ Features:
 * Customize the code behind the execution of any of the operators.
 * Support for compiling an expression and running multiple times while supplying different constants
 
+### Nuget
+
+```
+Install-Package Eval.net
+```
+
 ### Usage
 
 ```
