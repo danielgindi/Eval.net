@@ -58,7 +58,7 @@ namespace Eval.net
         };
 
         public static Dictionary<string, EvalFunctionDelegate> GetDefaultGenericFunctions(
-            Type type, bool autoParseNumericStrings = true, IFormatProvider stringFormatProvider = null)
+            Type type, bool autoParseNumericStrings = true, IFormatProvider autoParseNumericStringsFormatProvider = null)
         {
             Func<object, object> argFilter;
 
@@ -66,7 +66,7 @@ namespace Eval.net
             {
                 argFilter = arg =>
                 {
-                    return StringConversion.OptionallyConvertStringToDouble(arg, stringFormatProvider);
+                    return StringConversion.OptionallyConvertStringToDouble(arg, autoParseNumericStringsFormatProvider);
                 };
             }
             else
