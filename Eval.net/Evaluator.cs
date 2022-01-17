@@ -302,12 +302,6 @@ namespace Eval.net
             return output;
         }
 
-        internal static string ParseString(string data, int startAt = 0, bool strict = false, bool unquote = false)
-        {
-            int newIndex;
-            return ParseString(data, startAt, strict, unquote, out newIndex);
-        }
-
         internal static string ParseNumber(string data, int startAt, out int newIndex)
         {
             int i = startAt;
@@ -327,8 +321,8 @@ namespace Eval.net
 
                 if (c >= '0' && c <= '9')
                 {
-                    if (exp == 1) break;
-                    if (exp > 1) exp++;
+                    if (exp == 1 || exp == 2)
+                        exp = 3;
                 }
                 else if (c == '.')
                 {
@@ -551,17 +545,6 @@ namespace Eval.net
             throw new FormatException("Unmatched parenthesis for parenthesis at index " + tokens[startAt].Position);
         }
 
-        internal static int IndexOf<T>(T[] array, T item) where T : class
-        {
-            for (var i = 0; i < array.Length; i++)
-            {
-                if (array[i] == item)
-                    return i;
-            }
-
-            return -1;
-        }
-
         internal static Token BuildTree(List<Token> tokens, EvalConfiguration configuration)
         {
             var order = configuration.OperatorOrder;
@@ -719,7 +702,7 @@ namespace Eval.net
                         case "!": // Factorial or Not
                             if (token.Left != null) // Factorial (i.e. 5!)
                             {
-                                return configuration.Factorial(EvaluateToken(token.Right, configuration));
+                                return configuration.Factorial(EvaluateToken(token.Left, configuration));
                             }
                             else // Not (i.e. !5)
                             {

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Eval.net
 {
@@ -23,21 +19,19 @@ namespace Eval.net
             if (value is string)
             {
                 if (type.Equals(typeof(Decimal)))
-                    return Decimal.Parse((string)value, CultureInfo.InvariantCulture);
+                    return Decimal.Parse((string)value, AutoParseNumericStringsFormatProvider ?? CultureInfo.InvariantCulture);
 
                 if (type.Equals(typeof(Double)))
-                    return Double.Parse((string)value, CultureInfo.InvariantCulture);
+                    return (double)StringConversion.OptionallyConvertStringToDouble(value, AutoParseNumericStringsFormatProvider);
 
                 if (type.Equals(typeof(Single)))
-                    return Single.Parse((string)value, CultureInfo.InvariantCulture);
+                    return (float)(double)StringConversion.OptionallyConvertStringToDouble(value, AutoParseNumericStringsFormatProvider);
 
                 if (type.Equals(typeof(Int64)))
-                    return Int64.Parse((string)value, CultureInfo.InvariantCulture);
+                    return Int64.Parse((string)value, AutoParseNumericStringsFormatProvider ?? CultureInfo.InvariantCulture);
 
                 if (type.Equals(typeof(Int32)))
-                    return Int32.Parse((string)value, CultureInfo.InvariantCulture);
-
-                value = StringConversion.OptionallyConvertStringToDouble(value, AutoParseNumericStringsFormatProvider);
+                    return Int32.Parse((string)value, AutoParseNumericStringsFormatProvider ?? CultureInfo.InvariantCulture);
             }
 
             return Convert.ChangeType(value, type);

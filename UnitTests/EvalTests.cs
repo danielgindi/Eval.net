@@ -93,6 +93,14 @@ namespace UnitTests
             Assert.AreEqual(
                 (double)Evaluator.Execute("5+\"5\"", config),
                 10);
+
+            Assert.AreEqual(
+                (double)Evaluator.Execute("12e5", config),
+                1200000);
+
+            Assert.AreEqual(
+                (double)Evaluator.Execute("12e+5", config),
+                1200000);
         }
 
         [TestMethod]
