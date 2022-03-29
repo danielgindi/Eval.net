@@ -42,10 +42,11 @@ namespace Eval.net
                     continue;
                 }
 
+                // When we have something like this: "5*-1", we will move the "-" to be part of the number token.
                 if (token.Type == TokenType.Number &&
                     prevToken.Type == TokenType.Op &&
                     (prevToken.Value == "-" || prevToken.Value == "+") &&
-                    ((i > 1 && tokens[i - 2].Type == TokenType.Op) || i == 1)
+                    ((i > 1 && tokens[i - 2].Type == TokenType.Op && !configuration.SuffixOperators.Contains(tokens[i - 2].Value)) || i == 1)
                     )
                 {
                     if (prevToken.Value == "-")

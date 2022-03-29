@@ -41,6 +41,10 @@ namespace UnitTests
                 (bool)(-5 != 0 && 2 == 7 && -4 >= -5 >> -8 * -5));
 
             Assert.AreEqual(
+                (double)Evaluator.Execute("2*5!+3", config),
+                (double)243);
+
+            Assert.AreEqual(
                 (bool)Evaluator.Execute("\"testing\" == \"testing\"", config),
                 (bool)true);
 
