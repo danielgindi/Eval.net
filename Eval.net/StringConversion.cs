@@ -9,7 +9,7 @@ namespace Eval.net
         private static CultureInfo COMMA_DECIMAL_CULTURE = CultureInfo.GetCultureInfo("es");
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GuessNumberComma(string val, bool allowThousands)
+        public static bool GuessNumberComma(string val)
         {
             var sval = val.Trim();
             var p1 = val.IndexOf('.');
@@ -19,7 +19,7 @@ namespace Eval.net
             var hasSign = val.Length > 0 && (sval[0] == '-' || val[0] == '+');
             var lenNoSign = hasSign ? val.Length - 1 : val.Length;
 
-            bool isCommaBased;
+            bool isCommaBased = false;
 
             if (c1 != -1 && p1 != -1)
             { // who's last?
@@ -49,11 +49,6 @@ namespace Eval.net
             { // period not in thousands position
                 isCommaBased = false;
             }
-            else
-            {
-                // if there's a period in the thousands position -> guess that the number is comma based with thousands group
-                isCommaBased = allowThousands && p1 != -1;
-            }
 
             return isCommaBased;
         }
@@ -67,7 +62,7 @@ namespace Eval.net
                 if (double.TryParse(
                     sval,
                     NumberStyles.Float | NumberStyles.AllowThousands,
-                    formatProvider ?? (GuessNumberComma(sval, true) ? COMMA_DECIMAL_CULTURE : CultureInfo.InvariantCulture),
+                    formatProvider ?? (GuessNumberComma(sval) ? COMMA_DECIMAL_CULTURE : CultureInfo.InvariantCulture),
                     out var result))
                     return result;
 
