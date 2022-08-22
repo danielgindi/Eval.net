@@ -54,7 +54,13 @@ namespace Eval.net
             {
                 // do not convert them to numbers by mistake.
                 // multiplication could be used to cast to numbers.
-                return (string)a + (dynamic)b;
+                return (string)a + (((dynamic)b)?.ToString() ?? "");
+            }
+            else if (b is string)
+            {
+                // do not convert them to numbers by mistake.
+                // multiplication could be used to cast to numbers.
+                return (((dynamic)a)?.ToString() ?? "") + (string)b;
             }
 
             a = FilterArg(a);
