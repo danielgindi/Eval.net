@@ -50,5 +50,36 @@ namespace Eval.net
         {
             Configuration.ClearFunctions();
         }
+
+        public List<VariableInfo> GetAllVariablesInfo()
+        {
+            var vars = new List<VariableInfo>();
+            TraverseGetVariables(Root, vars);
+            return vars;
+        }
+
+        private static void TraverseGetVariables(Token token, List<VariableInfo> variables)
+        {
+            switch (token.Type)
+            {
+                case TokenType.Var:
+                    variables.Add(new VariableInfo { Name = token.Value, Position = token.Position });
+                    break;
+
+                case TokenType.Group:
+                    foreach (var t in token.Tokens)
+                    {
+                        TraverseGetVariables(t, variables);
+                    }
+                    break;
+
+                case TokenType.Call:
+                    foreach (var t in token.Arguments)
+                    {
+                        TraverseGetVariables(t, variables);
+                    }
+                    break;
+            }
+        }
     }
 }
