@@ -19,7 +19,7 @@ namespace Eval.net
             if (value is string)
             {
                 if (type.Equals(typeof(Decimal)))
-                    return Decimal.Parse((string)value, AutoParseNumericStringsFormatProvider ?? CultureInfo.InvariantCulture);
+                    return (decimal)StringConversion.OptionallyConvertStringToDecimal(value, AutoParseNumericStringsFormatProvider);
 
                 if (type.Equals(typeof(Double)))
                     return (double)StringConversion.OptionallyConvertStringToDouble(value, AutoParseNumericStringsFormatProvider);
@@ -42,7 +42,14 @@ namespace Eval.net
         {
             if (AutoParseNumericStrings)
             {
-                return StringConversion.OptionallyConvertStringToDouble(arg, AutoParseNumericStringsFormatProvider);
+                if (NumericType.Equals(typeof(double)))
+                {
+                    return StringConversion.OptionallyConvertStringToDecimal(arg, AutoParseNumericStringsFormatProvider);
+                }
+                else
+                {
+                    return StringConversion.OptionallyConvertStringToDouble(arg, AutoParseNumericStringsFormatProvider);
+                }
             }
 
             return arg;

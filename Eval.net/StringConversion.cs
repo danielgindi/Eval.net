@@ -73,5 +73,26 @@ namespace Eval.net
                 return val;
             }
         }
+
+        public static object OptionallyConvertStringToDecimal(object val, IFormatProvider formatProvider)
+        {
+            if (val is string)
+            {
+                var sval = (string)val;
+
+                if (decimal.TryParse(
+                    sval,
+                    NumberStyles.Float | NumberStyles.AllowThousands,
+                    formatProvider ?? (GuessNumberComma(sval) ? COMMA_DECIMAL_CULTURE : CultureInfo.InvariantCulture),
+                    out var result))
+                    return result;
+
+                return val;
+            }
+            else
+            {
+                return val;
+            }
+        }
     }
 }

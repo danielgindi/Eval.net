@@ -64,10 +64,20 @@ namespace Eval.net
 
             if (autoParseNumericStrings)
             {
-                argFilter = arg =>
+                if (type.Equals(typeof(decimal)))
                 {
-                    return StringConversion.OptionallyConvertStringToDouble(arg, autoParseNumericStringsFormatProvider);
-                };
+                    argFilter = arg =>
+                    {
+                        return StringConversion.OptionallyConvertStringToDecimal(arg, autoParseNumericStringsFormatProvider);
+                    };
+                }
+                else
+                {
+                    argFilter = arg =>
+                    {
+                        return StringConversion.OptionallyConvertStringToDouble(arg, autoParseNumericStringsFormatProvider);
+                    };
+                }
             }
             else
             {
