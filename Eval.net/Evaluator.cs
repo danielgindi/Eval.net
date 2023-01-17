@@ -8,6 +8,8 @@ namespace Eval.net
 {
     public class Evaluator
     {
+        public static object ConstProviderDefault = new ConstProviderDefaultFallback();
+
         public static CompiledExpression Compile(string expression, EvalConfiguration configuration)
         {
             var tokens = TokenizeExpression(expression, configuration);
@@ -675,7 +677,7 @@ namespace Eval.net
                     if (configuration.ConstProvider != null)
                     {
                         var val = configuration.ConstProvider(value);
-                        if (val != null)
+                        if (val != ConstProviderDefault)
                             return val;
                     }
 
@@ -819,4 +821,6 @@ namespace Eval.net
             throw new Exception("Function named \"" + fname + "\" was not found");
         }
     }
+
+    class ConstProviderDefaultFallback { }
 }

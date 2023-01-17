@@ -6,6 +6,12 @@ namespace Eval.net
     public partial class EvalConfiguration
     {
         public delegate object EvalFunctionDelegate(params object[] args);
+
+        /// <summary>
+        /// Explicitly return <see cref="Evaluator.ConstProviderDefault"/> to fallback
+        /// </summary>
+        /// <param name="varname"></param>
+        /// <returns></returns>
         public delegate object ConstProviderDelegate(string varname);
 
         public static readonly EvalConfiguration FloatConfiguration = new EvalConfiguration(typeof(float));
@@ -46,6 +52,9 @@ namespace Eval.net
         public Dictionary<string, object> Constants { get; set; }
         public Dictionary<string, EvalFunctionDelegate> Functions { get; set; }
 
+        /// <summary>
+        /// Explicitly return <see cref="Evaluator.ConstProviderDefault"/> to fallback
+        /// </summary>
         public ConstProviderDelegate ConstProvider { get; set; }
 
         public bool AutoParseNumericStrings { get; set; } = true;
