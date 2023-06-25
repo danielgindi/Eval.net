@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Eval.net
 {
@@ -87,9 +85,19 @@ namespace Eval.net
             return Execute(Compile(expression, configuration));
         }
 
+        public static System.Threading.Tasks.Task<object> ExecuteAsync(string expression, EvalConfiguration configuration, CancellationToken cancellationToken)
+        {
+            return ExecuteAsync(Compile(expression, configuration), cancellationToken);
+        }
+
         public static object Execute(CompiledExpression expression)
         {
             return EvaluateToken(expression.Root, expression.Configuration);
+        }
+
+        public static System.Threading.Tasks.Task<object> ExecuteAsync(CompiledExpression expression, CancellationToken cancellationToken)
+        {
+            return EvaluateTokenAsync(expression.Root, expression.Configuration, cancellationToken);
         }
 
         internal static string OpAtPosition(string expression, int start, EvalConfiguration configuration)
@@ -789,6 +797,142 @@ namespace Eval.net
             throw new Exception("An unexpected error occurred while evaluating expression");
         }
 
+        internal static async System.Threading.Tasks.Task<object> EvaluateTokenAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
+        {
+            var value = token.Value;
+
+            switch (token.Type)
+            {
+                case TokenType.String:
+                    return value;
+
+                case TokenType.Number:
+                    return configuration.ConvertToNumber(value);
+
+                case TokenType.Var:
+
+                    if (configuration.AsyncConstProvider != null)
+                    {
+                        var val = await configuration.AsyncConstProvider(cancellationToken, value).ConfigureAwait(false);
+                        if (val != ConstProviderDefault)
+                            return val;
+                    }
+
+                    if (configuration.ConstProvider != null)
+                    {
+                        var val = configuration.ConstProvider(value);
+                        if (val != ConstProviderDefault)
+                            return val;
+                    }
+
+                    if (configuration.Constants.ContainsKey(value))
+                        return configuration.Constants[value];
+
+                    if (configuration.Constants.ContainsKey(value.ToUpperInvariant()))
+                        return configuration.Constants[value.ToUpperInvariant()];
+
+                    if (configuration.GenericConstants.ContainsKey(value))
+                        return configuration.GenericConstants[value];
+
+                    if (configuration.GenericConstants.ContainsKey(value.ToUpperInvariant()))
+                        return configuration.GenericConstants[value.ToUpperInvariant()];
+
+                    return null;
+
+                case TokenType.Call:
+                    return EvaluateFunction(token, configuration);
+
+                case TokenType.Op:
+                    switch (token.Value)
+                    {
+
+                        case "!": // Factorial or Not
+                            if (token.Left != null) // Factorial (i.e. 5!)
+                            {
+                                return configuration.Factorial(await EvaluateTokenAsync(token.Left, configuration, cancellationToken));
+                            }
+                            else // Not (i.e. !5)
+                            {
+                                return configuration.LogicalNot(await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            }
+
+                        case "/": // Divide
+                        case "\\":
+                            return configuration.Divide(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "*": // Multiply
+                            return configuration.Multiply(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "+": // Add
+                            return configuration.Add(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "-": // Subtract
+                            return configuration.Subtract(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "<<": // Shift left
+                            return configuration.BitShiftLeft(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case ">>": // Shift right
+                            return configuration.BitShiftRight(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "<": // Less than
+                            return configuration.LessThan(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "<=": // Less than or equals to
+                            return configuration.LessThanOrEqualsTo(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case ">": // Greater than
+                            return configuration.GreaterThan(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case ">=": // Greater than or equals to
+                            return configuration.GreaterThanOrEqualsTo(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "==": // Equals to
+                        case "=":
+                            return configuration.EqualsTo(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "!=": // Not equals to
+                        case "<>":
+                            return configuration.NotEqualsTo(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "**": // Power
+                            return configuration.Pow(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "%": // Mod
+                            return configuration.Mod(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "&": // Bitwise AND
+                            return configuration.BitAnd(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "^": // Bitwise XOR
+                            return configuration.BitXor(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "|": // Bitwise OR
+                            return configuration.BitOr(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+
+                        case "&&": // Logical AND
+                            {
+                                var res = await EvaluateTokenAsync(token.Left, configuration, cancellationToken);
+                                if (configuration.IsTruthy(res))
+                                    return await EvaluateTokenAsync(token.Right, configuration, cancellationToken);
+                                return res;
+                            }
+
+                        case "||": // Logical OR
+                            {
+                                var res = await EvaluateTokenAsync(token.Left, configuration, cancellationToken);
+                                if (!configuration.IsTruthy(res))
+                                    return await EvaluateTokenAsync(token.Right, configuration, cancellationToken);
+                                return res;
+                            }
+
+                    }
+                    break;
+            }
+
+            throw new Exception("An unexpected error occurred while evaluating expression");
+        }
+
         internal static object EvaluateFunction(Token token, EvalConfiguration configuration)
         {
             var fname = token.Value;
@@ -808,6 +952,44 @@ namespace Eval.net
 
             if (configuration.Functions.ContainsKey(fname))
                 return configuration.Functions[fname](args.ToArray());
+
+            if (configuration.Functions.ContainsKey(fname.ToUpperInvariant()))
+                return configuration.Functions[fname.ToUpperInvariant()](args.ToArray());
+
+            if (configuration.GenericFunctions.ContainsKey(fname))
+                return configuration.GenericFunctions[fname](args.ToArray());
+
+            if (configuration.GenericFunctions.ContainsKey(fname.ToUpperInvariant()))
+                return configuration.GenericFunctions[fname.ToUpperInvariant()](args.ToArray());
+
+            throw new Exception("Function named \"" + fname + "\" was not found");
+        }
+
+        internal static async System.Threading.Tasks.Task<object> EvaluateFunctionAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
+        {
+            var fname = token.Value;
+
+            var args = new List<object>();
+            for (var i = 0; i < token.Arguments.Count; i++)
+            {
+                if (token.Arguments[i] == null)
+                {
+                    args.Add(null);
+                }
+                else
+                {
+                    args.Add(await EvaluateTokenAsync(token.Arguments[i], configuration, cancellationToken));
+                }
+            }
+
+            if (configuration.AsyncFunctions.ContainsKey(fname))
+                return await configuration.AsyncFunctions[fname](cancellationToken, args.ToArray()).ConfigureAwait(false);
+
+            if (configuration.Functions.ContainsKey(fname))
+                return configuration.Functions[fname](args.ToArray());
+
+            if (configuration.AsyncFunctions.ContainsKey(fname.ToUpperInvariant()))
+                return await configuration.AsyncFunctions[fname.ToUpperInvariant()](cancellationToken, args.ToArray()).ConfigureAwait(false);
 
             if (configuration.Functions.ContainsKey(fname.ToUpperInvariant()))
                 return configuration.Functions[fname.ToUpperInvariant()](args.ToArray());

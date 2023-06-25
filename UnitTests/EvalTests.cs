@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Eval.net;
+using System.Threading;
 
 namespace UnitTests
 {
@@ -128,6 +129,19 @@ namespace UnitTests
             for (int i = 0; i < 100000; i++)
             {
                 compiled.Execute();
+            }
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task Execute100000TimesAsync()
+        {
+            var config = EvalConfiguration.DoubleConfiguration;
+
+            var compiled = Evaluator.Compile("12+45*10", config);
+
+            for (int i = 0; i < 100000; i++)
+            {
+                await compiled.ExecuteAsync(CancellationToken.None);
             }
         }
     }

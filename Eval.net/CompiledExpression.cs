@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading;
 
 namespace Eval.net
 {
@@ -19,6 +16,11 @@ namespace Eval.net
         public object Execute()
         {
             return Evaluator.Execute(this);
+        }
+
+        public System.Threading.Tasks.Task<object> ExecuteAsync(CancellationToken cancellationToken)
+        {
+            return Evaluator.ExecuteAsync(this, cancellationToken);
         }
 
         public void SetConstant(string name, object value)
