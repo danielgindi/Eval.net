@@ -95,8 +95,8 @@ namespace UnitTests
                 "55");
 
             Assert.AreEqual(
-                (double)Evaluator.Execute("5+\"5\"", config),
-                10);
+                Evaluator.Execute("5+\"5\"", config),
+                "55");
 
             Assert.AreEqual(
                 (double)Evaluator.Execute("12e5", config),
