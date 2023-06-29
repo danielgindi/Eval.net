@@ -33,7 +33,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <Version>1.0.18</Version>
+    <Version>1.0.19</Version>
     <Company />
     <Product>Eval.net</Product>
     <Copyright>Copyright © Daniel Cohen Gindi (danielgindi@gmail.com) 2020</Copyright>
