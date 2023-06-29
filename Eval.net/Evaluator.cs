@@ -840,7 +840,7 @@ namespace Eval.net
                     return null;
 
                 case TokenType.Call:
-                    return EvaluateFunction(token, configuration);
+                    return await EvaluateFunctionAsync(token, configuration, cancellationToken);
 
                 case TokenType.Op:
                     switch (token.Value)
