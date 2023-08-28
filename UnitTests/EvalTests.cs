@@ -106,6 +106,10 @@ namespace UnitTests
             Assert.AreEqual(
                 (double)Evaluator.Execute("12e+5", config),
                 1200000);
+
+            Assert.AreEqual(
+                Evaluator.Compile("CALL(a,b,)", config).GetAllVariablesInfo().Count,
+                2);
         }
 
         [TestMethod]

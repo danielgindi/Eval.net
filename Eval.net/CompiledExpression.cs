@@ -78,6 +78,8 @@ namespace Eval.net
                 case TokenType.Call:
                     foreach (var t in token.Arguments)
                     {
+                        if (t == null)
+                            continue;
                         TraverseGetVariables(t, variables);
                     }
                     break;
