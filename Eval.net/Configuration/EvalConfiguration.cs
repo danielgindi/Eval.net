@@ -6,8 +6,8 @@ namespace Eval.net
 {
     public partial class EvalConfiguration
     {
-        public delegate object EvalFunctionDelegate(params object[] args);
-        public delegate System.Threading.Tasks.Task<object> AsyncEvalFunctionDelegate(CancellationToken cancellationToken, params object[] args);
+        public delegate object EvalFunctionDelegate(EvalConfiguration config, params object[] args);
+        public delegate System.Threading.Tasks.Task<object> AsyncEvalFunctionDelegate(CancellationToken cancellationToken, EvalConfiguration config, params object[] args);
 
         /// <summary>
         /// Explicitly return <see cref="Evaluator.ConstProviderDefault"/> to fallback

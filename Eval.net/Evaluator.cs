@@ -951,16 +951,16 @@ namespace Eval.net
             }
 
             if (configuration.Functions.ContainsKey(fname))
-                return configuration.Functions[fname](args.ToArray());
+                return configuration.Functions[fname](configuration, args.ToArray());
 
             if (configuration.Functions.ContainsKey(fname.ToUpperInvariant()))
-                return configuration.Functions[fname.ToUpperInvariant()](args.ToArray());
+                return configuration.Functions[fname.ToUpperInvariant()](configuration, args.ToArray());
 
             if (configuration.GenericFunctions.ContainsKey(fname))
-                return configuration.GenericFunctions[fname](args.ToArray());
+                return configuration.GenericFunctions[fname](configuration, args.ToArray());
 
             if (configuration.GenericFunctions.ContainsKey(fname.ToUpperInvariant()))
-                return configuration.GenericFunctions[fname.ToUpperInvariant()](args.ToArray());
+                return configuration.GenericFunctions[fname.ToUpperInvariant()](configuration, args.ToArray());
 
             throw new Exception("Function named \"" + fname + "\" was not found");
         }
@@ -983,22 +983,22 @@ namespace Eval.net
             }
 
             if (configuration.AsyncFunctions.ContainsKey(fname))
-                return await configuration.AsyncFunctions[fname](cancellationToken, args.ToArray()).ConfigureAwait(false);
+                return await configuration.AsyncFunctions[fname](cancellationToken, configuration, args.ToArray()).ConfigureAwait(false);
 
             if (configuration.Functions.ContainsKey(fname))
-                return configuration.Functions[fname](args.ToArray());
+                return configuration.Functions[fname](configuration, args.ToArray());
 
             if (configuration.AsyncFunctions.ContainsKey(fname.ToUpperInvariant()))
-                return await configuration.AsyncFunctions[fname.ToUpperInvariant()](cancellationToken, args.ToArray()).ConfigureAwait(false);
+                return await configuration.AsyncFunctions[fname.ToUpperInvariant()](cancellationToken, configuration, args.ToArray()).ConfigureAwait(false);
 
             if (configuration.Functions.ContainsKey(fname.ToUpperInvariant()))
-                return configuration.Functions[fname.ToUpperInvariant()](args.ToArray());
+                return configuration.Functions[fname.ToUpperInvariant()](configuration, args.ToArray());
 
             if (configuration.GenericFunctions.ContainsKey(fname))
-                return configuration.GenericFunctions[fname](args.ToArray());
+                return configuration.GenericFunctions[fname](configuration, args.ToArray());
 
             if (configuration.GenericFunctions.ContainsKey(fname.ToUpperInvariant()))
-                return configuration.GenericFunctions[fname.ToUpperInvariant()](args.ToArray());
+                return configuration.GenericFunctions[fname.ToUpperInvariant()](configuration, args.ToArray());
 
             throw new Exception("Function named \"" + fname + "\" was not found");
         }
