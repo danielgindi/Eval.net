@@ -951,6 +951,23 @@ namespace Eval.net
             return args.ToArray();
         }
 
+        private static async System.Threading.Tasks.Task<object[]> EvaluateArgsAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
+        {
+            var args = new List<object>();
+            for (var i = 0; i < token.Arguments.Count; i++)
+            {
+                if (token.Arguments[i] == null)
+                {
+                    args.Add(null);
+                }
+                else
+                {
+                    args.Add(await EvaluateTokenAsync(token.Arguments[i], configuration, cancellationToken));
+                }
+            }
+            return args.ToArray();
+        }
+
         private static ArgResolver[] EvaluateArgsLazy(Token token, EvalConfiguration configuration)
         {
             var args = new List<ArgResolver>();
@@ -962,7 +979,8 @@ namespace Eval.net
                 }
                 else
                 {
-                    args.Add(() => EvaluateToken(token.Arguments[i], configuration));
+                    int argIndex = i;
+                    args.Add(() => EvaluateToken(token.Arguments[argIndex], configuration));
                 }
             }
             return args.ToArray();
@@ -979,7 +997,8 @@ namespace Eval.net
                 }
                 else
                 {
-                    args.Add(() => EvaluateTokenAsync(token.Arguments[i], configuration, cancellationToken));
+                    int argIndex = i;
+                    args.Add(() => EvaluateTokenAsync(token.Arguments[argIndex], configuration, cancellationToken));
                 }
             }
             return args.ToArray();
@@ -1014,10 +1033,19 @@ namespace Eval.net
                 configuration.GenericFunctions.TryGetValue(fname.ToUpperInvariant(), out f))
             {
                 if (f.AsyncFunc != null)
-                    return await f.AsyncFunc(cancellationToken, configuration, f.Lazy ? EvaluateArgsLazyAsync(token, configuration, cancellationToken) : EvaluateArgs(token, configuration));
+                    return await f.AsyncFunc(
+                        cancellationToken,
+                        configuration, 
+                        f.Lazy
+                            ? EvaluateArgsLazyAsync(token, configuration, cancellationToken)
+                            : await EvaluateArgsAsync(token, configuration, cancellationToken));
 
                 if (f.Func != null)
-                    return f.Func(configuration, f.Lazy ? EvaluateArgsLazy(token, configuration) : EvaluateArgs(token, configuration));
+                    return f.Func(
+                        configuration,
+                        f.Lazy
+                            ? EvaluateArgsLazy(token, configuration)
+                            : await EvaluateArgsAsync(token, configuration, cancellationToken));
             }
 
             throw new Exception("Function named \"" + fname + "\" was not found");

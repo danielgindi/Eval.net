@@ -193,11 +193,11 @@ namespace UnitTests
 
             Assert.AreEqual(
                 await Evaluator.ExecuteAsync("Ret(123)", config, CancellationToken.None),
-                "123");
+                123.0);
 
             Assert.AreEqual(
                 Evaluator.Execute("Ret(123)", config),
-                "123");
+                123.0);
         }
 
         [TestMethod]
@@ -213,7 +213,7 @@ namespace UnitTests
 
             try
             {
-                Evaluator.Execute("DoNothing(1/0)", config);
+                Evaluator.Execute("DoNothing(NOTFOUND())", config);
             }
             catch
             {
@@ -236,7 +236,7 @@ namespace UnitTests
 
             try
             {
-                await Evaluator.ExecuteAsync("DoNothing(1/0)", config, CancellationToken.None);
+                await Evaluator.ExecuteAsync("DoNothing(NOTFOUND())", config, CancellationToken.None);
             }
             catch
             {
