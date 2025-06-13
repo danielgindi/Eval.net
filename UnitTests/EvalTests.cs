@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Eval.net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace UnitTests
 {
@@ -147,6 +148,102 @@ namespace UnitTests
             {
                 await compiled.ExecuteAsync(CancellationToken.None);
             }
+        }
+
+        [TestMethod]
+        public void LazyFunctionExec()
+        {
+            var config = EvalConfiguration.DoubleConfiguration;
+            config.SetFunction("DoNothing", (_, args) =>
+            {
+                return "OK";
+            }, true);
+
+            Assert.AreEqual(
+                Evaluator.Execute("DoNothing(1/0)", config),
+                "OK");
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task LazyFunctionExecAsync()
+        {
+            var config = EvalConfiguration.DoubleConfiguration;
+            config.SetFunction("DoNothing", (cancellationToken, _, args) =>
+            {
+                return Task.FromResult((object)"OK");
+            }, true);
+
+            Assert.AreEqual(
+                await Evaluator.ExecuteAsync("DoNothing(1/0)", config, CancellationToken.None),
+                "OK");
+
+            Assert.AreEqual(
+                Evaluator.Execute("DoNothing(1/0)", config),
+                "OK");
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task LazyFunctionExecAsync2()
+        {
+            var config = EvalConfiguration.DoubleConfiguration;
+            config.SetFunction("Ret", (cancellationToken, _, args) =>
+            {
+                return (args[0] as EvalConfiguration.ArgResolverAsync)();
+            }, true);
+
+            Assert.AreEqual(
+                await Evaluator.ExecuteAsync("Ret(123)", config, CancellationToken.None),
+                "123");
+
+            Assert.AreEqual(
+                Evaluator.Execute("Ret(123)", config),
+                "123");
+        }
+
+        [TestMethod]
+        public void NonLazyFunctionExec()
+        {
+            var config = EvalConfiguration.DoubleConfiguration;
+            config.SetFunction("DoNothing", (_, args) =>
+            {
+                return "OK";
+            }, false);
+
+            var didThrow = false;
+
+            try
+            {
+                Evaluator.Execute("DoNothing(1/0)", config);
+            }
+            catch
+            {
+                didThrow = true;
+            }
+
+            Assert.AreEqual(didThrow, true);
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task NonLazyFunctionExecAsync()
+        {
+            var config = EvalConfiguration.DoubleConfiguration;
+            config.SetFunction("DoNothing", (cancellationToken, _, args) =>
+            {
+                return Task.FromResult((object)"OK");
+            }, false);
+
+            var didThrow = false;
+
+            try
+            {
+                await Evaluator.ExecuteAsync("DoNothing(1/0)", config, CancellationToken.None);
+            }
+            catch
+            {
+                didThrow = true;
+            }
+
+            Assert.AreEqual(didThrow, true);
         }
     }
 }

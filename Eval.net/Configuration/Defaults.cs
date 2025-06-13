@@ -57,7 +57,7 @@ namespace Eval.net
             { "FALSE", false },
         };
 
-        public static Dictionary<string, EvalFunctionDelegate> GetDefaultGenericFunctions(
+        public static Dictionary<string, FunctionConfig> GetDefaultGenericFunctions(
             Type type, bool autoParseNumericStrings = true, IFormatProvider autoParseNumericStringsFormatProvider = null)
         {
             Func<object, object> argFilter;
@@ -84,40 +84,40 @@ namespace Eval.net
                 argFilter = arg => arg;
             }
 
-            return new Dictionary<string, EvalFunctionDelegate>
+            return new Dictionary<string, FunctionConfig>
             {
-                { "ABS", (_c, args) => Convert.ChangeType(Math.Abs((dynamic)argFilter(args[0])), type) },
-                { "ACOS", (_c, args) => Convert.ChangeType(Math.Acos(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "ASIN", (_c, args) => Convert.ChangeType(Math.Asin(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "ATAN", (_c, args) => Convert.ChangeType(Math.Atan(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "ATAN2", (_c, args) => Convert.ChangeType(Math.Atan2(Convert.ToDouble(argFilter(args[0])), Convert.ToDouble(argFilter(args[1]))), type) },
-                { "CEILING", (_c, args) => {
+                { "ABS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Abs((dynamic)argFilter(args[0])), type)) },
+                { "ACOS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Acos(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "ASIN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Asin(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "ATAN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Atan(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "ATAN2", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Atan2(Convert.ToDouble(argFilter(args[0])), Convert.ToDouble(argFilter(args[1]))), type)) },
+                { "CEILING", FunctionConfig.For((_c, args) => {
                     var arg = args[0];
                     if (arg is double)
                         return Convert.ChangeType(Math.Ceiling((double)arg), type);
                     if (arg is decimal)
                         return Convert.ChangeType(Math.Ceiling((decimal)arg), type);
                     return Convert.ChangeType(Math.Ceiling(Convert.ToDouble(argFilter(arg))), type);
-                } },
-                { "COS", (_c, args) => Convert.ChangeType(Math.Cos(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "COSH", (_c, args) => Convert.ChangeType(Math.Cosh(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "EXP", (_c, args) => Convert.ChangeType(Math.Exp(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "FLOOR", (_c, args) => {
+                }) },
+                { "COS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Cos(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "COSH", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Cosh(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "EXP", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Exp(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "FLOOR", FunctionConfig.For((_c, args) => {
                     var arg = args[0];
                     if (arg is double)
                         return Convert.ChangeType(Math.Floor((double)arg), type);
                     if (arg is decimal)
                         return Convert.ChangeType(Math.Floor((decimal)arg), type);
                     return Convert.ChangeType(Math.Floor(Convert.ToDouble(argFilter(arg))), type);
-                } },
-                { "LOG", (_c, args) => {
+                }) },
+                { "LOG", FunctionConfig.For((_c, args) => {
                     if (args.Length == 2)
                         return Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0])), Convert.ToDouble(argFilter(args[1]))), type);
                     return Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0]))), type);
-                } },
-                { "LOG2", (_c, args) => Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0])), 2), type) },
-                { "LOG10", (_c, args) => Convert.ChangeType(Math.Log10(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "MAX", (_c, args) => {
+                }) },
+                { "LOG2", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0])), 2), type)) },
+                { "LOG10", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Log10(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "MAX", FunctionConfig.For((_c, args) => {
                     if (args.Length == 0) return null;
                     else
                     {
@@ -134,8 +134,8 @@ namespace Eval.net
                         }
                         return v;
                     }
-                } },
-                { "MIN", (_c, args) => {
+                }) },
+                { "MIN", FunctionConfig.For((_c, args) => {
                     if (args.Length == 0) return null;
                     else
                     {
@@ -152,30 +152,30 @@ namespace Eval.net
                         }
                         return v;
                     }
-                } },
-                { "POW", (_c, args) => Convert.ChangeType(Math.Pow(Convert.ToDouble(argFilter(args[0])), Convert.ToDouble(argFilter(args[1]))), type) },
-                { "ROUND", (_c, args) => {
+                }) },
+                { "POW", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Pow(Convert.ToDouble(argFilter(args[0])), Convert.ToDouble(argFilter(args[1]))), type)) },
+                { "ROUND", FunctionConfig.For((_c, args) => {
                     var arg = args[0];
                     if (arg is double)
                         return Convert.ChangeType(Math.Round((double)arg), type);
                     if (arg is decimal)
                         return Convert.ChangeType(Math.Round((decimal)arg), type);
                     return Convert.ChangeType(Math.Round(Convert.ToDouble(argFilter(arg))), type);
-                } },
-                { "SIGN", (_c, args) => Convert.ChangeType(Math.Sign((dynamic)argFilter(args[0])), type) },
-                { "SIN", (_c, args) => Convert.ChangeType(Math.Sin(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "SINH", (_c, args) => Convert.ChangeType(Math.Sinh(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "SQRT", (_c, args) => Convert.ChangeType(Math.Sqrt(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "TAN", (_c, args) => Convert.ChangeType(Math.Tan(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "TANH", (_c, args) => Convert.ChangeType(Math.Tanh(Convert.ToDouble(argFilter(args[0]))), type) },
-                { "TRUNCATE", (_c, args) => {
+                }) },
+                { "SIGN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sign((dynamic)argFilter(args[0])), type)) },
+                { "SIN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sin(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "SINH", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sinh(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "SQRT", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sqrt(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "TAN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Tan(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "TANH", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Tanh(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "TRUNCATE", FunctionConfig.For((_c, args) => {
                     var arg = args[0];
                     if (arg is double)
                         return Convert.ChangeType(Math.Truncate((double)arg), type);
                     if (arg is decimal)
                         return Convert.ChangeType(Math.Truncate((decimal)arg), type);
                     return Convert.ChangeType(Math.Truncate(Convert.ToDouble(argFilter(arg))), type);
-                } },
+                }) },
             };
         }
 

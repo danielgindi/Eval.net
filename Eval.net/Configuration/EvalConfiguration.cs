@@ -6,8 +6,23 @@ namespace Eval.net
 {
     public partial class EvalConfiguration
     {
+        public delegate object ArgResolver();
+        public delegate System.Threading.Tasks.Task<object> ArgResolverAsync();
+
         public delegate object EvalFunctionDelegate(EvalConfiguration config, params object[] args);
         public delegate System.Threading.Tasks.Task<object> AsyncEvalFunctionDelegate(CancellationToken cancellationToken, EvalConfiguration config, params object[] args);
+
+        public struct FunctionConfig
+        {
+            public EvalFunctionDelegate Func;
+            public AsyncEvalFunctionDelegate AsyncFunc;
+            public bool Lazy;
+
+            public static FunctionConfig For(EvalFunctionDelegate func)
+            {
+                return new FunctionConfig { Func = func, Lazy = false };
+            }
+        }
 
         /// <summary>
         /// Explicitly return <see cref="Evaluator.ConstProviderDefault"/> to fallback
@@ -51,10 +66,9 @@ namespace Eval.net
         public HashSet<char> VarNameChars { get; set; }
 
         public Dictionary<string, object> GenericConstants { get; set; }
-        public Dictionary<string, EvalFunctionDelegate> GenericFunctions { get; set; }
+        public Dictionary<string, FunctionConfig> GenericFunctions { get; set; }
         public Dictionary<string, object> Constants { get; set; }
-        public Dictionary<string, EvalFunctionDelegate> Functions { get; set; }
-        public Dictionary<string, AsyncEvalFunctionDelegate> AsyncFunctions { get; set; }
+        public Dictionary<string, FunctionConfig> Functions { get; set; }
 
         /// <summary>
         /// Explicitly return <see cref="Evaluator.ConstProviderDefault"/> to fallback
@@ -82,25 +96,24 @@ namespace Eval.net
             Constants.Remove(name);
         }
 
-        public void SetFunction(string name, EvalFunctionDelegate func)
+        public void SetFunction(string name, EvalFunctionDelegate func, bool lazy = false)
         {
             if (Functions == null)
             {
-                Functions = new Dictionary<string, EvalFunctionDelegate>();
+                Functions = new Dictionary<string, FunctionConfig>();
             }
 
-            Functions[name] = func;
+            Functions[name] = new FunctionConfig { Func = func, Lazy = false };
         }
 
-        public void SetFunction(string name, AsyncEvalFunctionDelegate func)
+        public void SetFunction(string name, AsyncEvalFunctionDelegate func, bool lazy = false)
         {
-            if (AsyncFunctions == null)
+            if (Functions == null)
             {
-                AsyncFunctions = new Dictionary<string, AsyncEvalFunctionDelegate>();
+                Functions = new Dictionary<string, FunctionConfig>();
             }
 
-            AsyncFunctions[name] = func;
-            Functions?.Remove(name);
+            Functions[name] = new FunctionConfig { AsyncFunc = func, Lazy = false };
         }
 
         public void RemoveFunction(string name)
@@ -118,7 +131,6 @@ namespace Eval.net
         public void ClearFunctions()
         {
             Functions.Clear();
-            AsyncFunctions.Clear();
         }
 
         public EvalConfiguration() : this(typeof(double))
@@ -140,11 +152,10 @@ namespace Eval.net
             RightAssociativeOps = DefaultRightAssociativeOps;
             VarNameChars = DefaultVarNameChars;
             GenericConstants = new Dictionary<string, object>(DefaultGenericConstants);
-            GenericFunctions = new Dictionary<string, EvalFunctionDelegate>(
+            GenericFunctions = new Dictionary<string, FunctionConfig>(
                 GetDefaultGenericFunctions(NumericType, AutoParseNumericStrings, AutoParseNumericStringsFormatProvider));
             Constants = new Dictionary<string, object>();
-            Functions = new Dictionary<string, EvalFunctionDelegate>();
-            AsyncFunctions = new Dictionary<string, AsyncEvalFunctionDelegate>();
+            Functions = new Dictionary<string, FunctionConfig>();
         }
 
         public virtual EvalConfiguration Clone(bool deep = false)
@@ -162,10 +173,9 @@ namespace Eval.net
             config.RightAssociativeOps = deep ? new HashSet<string>(RightAssociativeOps) : RightAssociativeOps;
             config.VarNameChars = deep ? new HashSet<char>(VarNameChars) : VarNameChars;
             config.GenericConstants = deep ? new Dictionary<string, object>(GenericConstants) : GenericConstants;
-            config.GenericFunctions = deep ? new Dictionary<string, EvalFunctionDelegate>(GenericFunctions) : GenericFunctions;
+            config.GenericFunctions = deep ? new Dictionary<string, FunctionConfig>(GenericFunctions) : GenericFunctions;
             config.Constants = deep ? new Dictionary<string, object>(Constants) : Constants;
-            config.Functions = deep ? new Dictionary<string, EvalFunctionDelegate>(Functions) : Functions;
-            config.AsyncFunctions = deep ? new Dictionary<string, AsyncEvalFunctionDelegate>(AsyncFunctions) : AsyncFunctions;
+            config.Functions = deep ? new Dictionary<string, FunctionConfig>(Functions) : Functions;
             config.ConstProvider = ConstProvider;
             config.AsyncConstProvider = AsyncConstProvider;
             return config;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using static Eval.net.EvalConfiguration;
 
 namespace Eval.net
 {
@@ -933,10 +934,8 @@ namespace Eval.net
             throw new Exception("An unexpected error occurred while evaluating expression");
         }
 
-        internal static object EvaluateFunction(Token token, EvalConfiguration configuration)
+        private static object[] EvaluateArgs(Token token, EvalConfiguration configuration)
         {
-            var fname = token.Value;
-
             var args = new List<object>();
             for (var i = 0; i < token.Arguments.Count; i++)
             {
@@ -949,18 +948,58 @@ namespace Eval.net
                     args.Add(EvaluateToken(token.Arguments[i], configuration));
                 }
             }
+            return args.ToArray();
+        }
 
-            if (configuration.Functions.ContainsKey(fname))
-                return configuration.Functions[fname](configuration, args.ToArray());
+        private static ArgResolver[] EvaluateArgsLazy(Token token, EvalConfiguration configuration)
+        {
+            var args = new List<ArgResolver>();
+            for (var i = 0; i < token.Arguments.Count; i++)
+            {
+                if (token.Arguments[i] == null)
+                {
+                    args.Add(() => null);
+                }
+                else
+                {
+                    args.Add(() => EvaluateToken(token.Arguments[i], configuration));
+                }
+            }
+            return args.ToArray();
+        }
 
-            if (configuration.Functions.ContainsKey(fname.ToUpperInvariant()))
-                return configuration.Functions[fname.ToUpperInvariant()](configuration, args.ToArray());
+        private static ArgResolverAsync[] EvaluateArgsLazyAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
+        {
+            var args = new List<ArgResolverAsync>();
+            for (var i = 0; i < token.Arguments.Count; i++)
+            {
+                if (token.Arguments[i] == null)
+                {
+                    args.Add(() => null);
+                }
+                else
+                {
+                    args.Add(() => EvaluateTokenAsync(token.Arguments[i], configuration, cancellationToken));
+                }
+            }
+            return args.ToArray();
+        }
 
-            if (configuration.GenericFunctions.ContainsKey(fname))
-                return configuration.GenericFunctions[fname](configuration, args.ToArray());
+        internal static object EvaluateFunction(Token token, EvalConfiguration configuration)
+        {
+            var fname = token.Value;
 
-            if (configuration.GenericFunctions.ContainsKey(fname.ToUpperInvariant()))
-                return configuration.GenericFunctions[fname.ToUpperInvariant()](configuration, args.ToArray());
+            if (configuration.Functions.TryGetValue(fname, out var f) ||
+                configuration.Functions.TryGetValue(fname.ToUpperInvariant(), out f) ||
+                configuration.GenericFunctions.TryGetValue(fname, out f) ||
+                configuration.GenericFunctions.TryGetValue(fname.ToUpperInvariant(), out f))
+            {
+                if (f.Func != null)
+                    return f.Func(configuration, f.Lazy ? EvaluateArgsLazy(token, configuration) : EvaluateArgs(token, configuration));
+                
+                if (f.AsyncFunc != null)
+                    return f.AsyncFunc(CancellationToken.None, configuration, f.Lazy ? EvaluateArgsLazyAsync(token, configuration, CancellationToken.None) : EvaluateArgs(token, configuration)).Result;
+            }
 
             throw new Exception("Function named \"" + fname + "\" was not found");
         }
@@ -969,36 +1008,17 @@ namespace Eval.net
         {
             var fname = token.Value;
 
-            var args = new List<object>();
-            for (var i = 0; i < token.Arguments.Count; i++)
+            if (configuration.Functions.TryGetValue(fname, out var f) ||
+                configuration.Functions.TryGetValue(fname.ToUpperInvariant(), out f) ||
+                configuration.GenericFunctions.TryGetValue(fname, out f) ||
+                configuration.GenericFunctions.TryGetValue(fname.ToUpperInvariant(), out f))
             {
-                if (token.Arguments[i] == null)
-                {
-                    args.Add(null);
-                }
-                else
-                {
-                    args.Add(await EvaluateTokenAsync(token.Arguments[i], configuration, cancellationToken));
-                }
+                if (f.AsyncFunc != null)
+                    return await f.AsyncFunc(cancellationToken, configuration, f.Lazy ? EvaluateArgsLazyAsync(token, configuration, cancellationToken) : EvaluateArgs(token, configuration));
+
+                if (f.Func != null)
+                    return f.Func(configuration, f.Lazy ? EvaluateArgsLazy(token, configuration) : EvaluateArgs(token, configuration));
             }
-
-            if (configuration.AsyncFunctions.ContainsKey(fname))
-                return await configuration.AsyncFunctions[fname](cancellationToken, configuration, args.ToArray()).ConfigureAwait(false);
-
-            if (configuration.Functions.ContainsKey(fname))
-                return configuration.Functions[fname](configuration, args.ToArray());
-
-            if (configuration.AsyncFunctions.ContainsKey(fname.ToUpperInvariant()))
-                return await configuration.AsyncFunctions[fname.ToUpperInvariant()](cancellationToken, configuration, args.ToArray()).ConfigureAwait(false);
-
-            if (configuration.Functions.ContainsKey(fname.ToUpperInvariant()))
-                return configuration.Functions[fname.ToUpperInvariant()](configuration, args.ToArray());
-
-            if (configuration.GenericFunctions.ContainsKey(fname))
-                return configuration.GenericFunctions[fname](configuration, args.ToArray());
-
-            if (configuration.GenericFunctions.ContainsKey(fname.ToUpperInvariant()))
-                return configuration.GenericFunctions[fname.ToUpperInvariant()](configuration, args.ToArray());
 
             throw new Exception("Function named \"" + fname + "\" was not found");
         }
