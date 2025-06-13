@@ -103,7 +103,7 @@ namespace Eval.net
                 Functions = new Dictionary<string, FunctionConfig>();
             }
 
-            Functions[name] = new FunctionConfig { Func = func, Lazy = false };
+            Functions[name] = new FunctionConfig { Func = func, Lazy = lazy };
         }
 
         public void SetFunction(string name, AsyncEvalFunctionDelegate func, bool lazy = false)
@@ -113,7 +113,7 @@ namespace Eval.net
                 Functions = new Dictionary<string, FunctionConfig>();
             }
 
-            Functions[name] = new FunctionConfig { AsyncFunc = func, Lazy = false };
+            Functions[name] = new FunctionConfig { AsyncFunc = func, Lazy = lazy };
         }
 
         public void RemoveFunction(string name)
