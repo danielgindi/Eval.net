@@ -6,11 +6,11 @@ namespace Eval.net
 {
     public partial class EvalConfiguration
     {
-        public delegate object ArgResolver();
-        public delegate System.Threading.Tasks.Task<object> ArgResolverAsync();
+        public delegate object? ArgResolver();
+        public delegate System.Threading.Tasks.Task<object?> ArgResolverAsync();
 
-        public delegate object EvalFunctionDelegate(EvalConfiguration config, params object[] args);
-        public delegate System.Threading.Tasks.Task<object> AsyncEvalFunctionDelegate(CancellationToken cancellationToken, EvalConfiguration config, params object[] args);
+        public delegate object? EvalFunctionDelegate(EvalConfiguration config, params object?[] args);
+        public delegate System.Threading.Tasks.Task<object?> AsyncEvalFunctionDelegate(CancellationToken cancellationToken, EvalConfiguration config, params object?[] args);
 
         public struct FunctionConfig
         {
@@ -30,7 +30,7 @@ namespace Eval.net
         /// <param name="varname"></param>
         /// <returns></returns>
         public delegate object ConstProviderDelegate(string varname);
-        public delegate System.Threading.Tasks.Task<object> AsyncConstProviderDelegate(CancellationToken cancellationToken, string varname);
+        public delegate System.Threading.Tasks.Task<object?> AsyncConstProviderDelegate(CancellationToken cancellationToken, string varname);
 
         public static readonly EvalConfiguration FloatConfiguration = new EvalConfiguration(typeof(float));
         public static readonly EvalConfiguration DoubleConfiguration = new EvalConfiguration(typeof(double));
@@ -38,9 +38,9 @@ namespace Eval.net
 
         public Type NumericType { get; private set; }
 
-        internal string[] _AllOperators;
+        internal string[]? _AllOperators;
 
-        private string[][] _OperatorOrder;
+        private string[][] _OperatorOrder = null!; // Will be assigned in the constructor
         public string[][] OperatorOrder
         {
             get { return _OperatorOrder; }
@@ -65,25 +65,25 @@ namespace Eval.net
 
         public HashSet<char> VarNameChars { get; set; }
 
-        public Dictionary<string, object> GenericConstants { get; set; }
+        public Dictionary<string, object?> GenericConstants { get; set; }
         public Dictionary<string, FunctionConfig> GenericFunctions { get; set; }
-        public Dictionary<string, object> Constants { get; set; }
+        public Dictionary<string, object?> Constants { get; set; }
         public Dictionary<string, FunctionConfig> Functions { get; set; }
 
         /// <summary>
         /// Explicitly return <see cref="Evaluator.ConstProviderDefault"/> to fallback
         /// </summary>
-        public ConstProviderDelegate ConstProvider { get; set; }
-        public AsyncConstProviderDelegate AsyncConstProvider { get; set; }
+        public ConstProviderDelegate? ConstProvider { get; set; }
+        public AsyncConstProviderDelegate? AsyncConstProvider { get; set; }
 
         public bool AutoParseNumericStrings { get; set; } = true;
-        public IFormatProvider AutoParseNumericStringsFormatProvider { get; set; } = null;
+        public IFormatProvider? AutoParseNumericStringsFormatProvider { get; set; } = null;
 
-        public void SetConstant(string name, object value)
+        public void SetConstant(string name, object? value)
         {
             if (Constants == null)
             {
-                Constants = new Dictionary<string, object>();
+                Constants = new Dictionary<string, object?>();
             }
 
             Constants[name] = value;
@@ -140,7 +140,7 @@ namespace Eval.net
         public EvalConfiguration(
             Type numericType, 
             bool autoParseNumericStrings = true, 
-            IFormatProvider autoParseNumericStringsFormatProvider = null)
+            IFormatProvider? autoParseNumericStringsFormatProvider = null)
         {
             this.NumericType = numericType;
             this.AutoParseNumericStrings = autoParseNumericStrings;
@@ -151,10 +151,10 @@ namespace Eval.net
             SuffixOperators = DefaultSuffixOperators;
             RightAssociativeOps = DefaultRightAssociativeOps;
             VarNameChars = DefaultVarNameChars;
-            GenericConstants = new Dictionary<string, object>(DefaultGenericConstants);
+            GenericConstants = new Dictionary<string, object?>(DefaultGenericConstants);
             GenericFunctions = new Dictionary<string, FunctionConfig>(
                 GetDefaultGenericFunctions(NumericType, AutoParseNumericStrings, AutoParseNumericStringsFormatProvider));
-            Constants = new Dictionary<string, object>();
+            Constants = new Dictionary<string, object?>();
             Functions = new Dictionary<string, FunctionConfig>();
         }
 
@@ -172,9 +172,9 @@ namespace Eval.net
             config.SuffixOperators = deep ? new HashSet<string>(SuffixOperators) : SuffixOperators;
             config.RightAssociativeOps = deep ? new HashSet<string>(RightAssociativeOps) : RightAssociativeOps;
             config.VarNameChars = deep ? new HashSet<char>(VarNameChars) : VarNameChars;
-            config.GenericConstants = deep ? new Dictionary<string, object>(GenericConstants) : GenericConstants;
+            config.GenericConstants = deep ? new Dictionary<string, object?>(GenericConstants) : GenericConstants;
             config.GenericFunctions = deep ? new Dictionary<string, FunctionConfig>(GenericFunctions) : GenericFunctions;
-            config.Constants = deep ? new Dictionary<string, object>(Constants) : Constants;
+            config.Constants = deep ? new Dictionary<string, object?>(Constants) : Constants;
             config.Functions = deep ? new Dictionary<string, FunctionConfig>(Functions) : Functions;
             config.ConstProvider = ConstProvider;
             config.AsyncConstProvider = AsyncConstProvider;

@@ -53,7 +53,7 @@ namespace Eval.net
             return isCommaBased;
         }
 
-        public static object OptionallyConvertStringToDouble(object val, IFormatProvider formatProvider)
+        public static object? OptionallyConvertStringToDouble(object? val, IFormatProvider? formatProvider)
         {
             if (val is string)
             {
@@ -74,7 +74,7 @@ namespace Eval.net
             }
         }
 
-        public static object OptionallyConvertStringToDecimal(object val, IFormatProvider formatProvider)
+        public static object? OptionallyConvertStringToDecimal(object? val, IFormatProvider? formatProvider)
         {
             if (val is string)
             {

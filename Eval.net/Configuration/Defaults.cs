@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Eval.net
 {
@@ -44,7 +39,7 @@ namespace Eval.net
             "**"
         });
 
-        public static readonly Dictionary<string, object> DefaultGenericConstants = new Dictionary<string, object>
+        public static readonly Dictionary<string, object?> DefaultGenericConstants = new Dictionary<string, object?>
         {
             { "PI", Math.PI },
             { "PI_2", Math.PI / 2.0 },
@@ -58,9 +53,9 @@ namespace Eval.net
         };
 
         public static Dictionary<string, FunctionConfig> GetDefaultGenericFunctions(
-            Type type, bool autoParseNumericStrings = true, IFormatProvider autoParseNumericStringsFormatProvider = null)
+            Type type, bool autoParseNumericStrings = true, IFormatProvider? autoParseNumericStringsFormatProvider = null)
         {
-            Func<object, object> argFilter;
+            Func<object?, object?> argFilter;
 
             if (autoParseNumericStrings)
             {
@@ -86,11 +81,11 @@ namespace Eval.net
 
             return new Dictionary<string, FunctionConfig>
             {
-                { "ABS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Abs((dynamic)argFilter(args[0])), type)) },
-                { "ACOS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Acos(Convert.ToDouble(argFilter(args[0]))), type)) },
-                { "ASIN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Asin(Convert.ToDouble(argFilter(args[0]))), type)) },
-                { "ATAN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Atan(Convert.ToDouble(argFilter(args[0]))), type)) },
-                { "ATAN2", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Atan2(Convert.ToDouble(argFilter(args[0])), Convert.ToDouble(argFilter(args[1]))), type)) },
+                { "ABS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Abs((dynamic)argFilter(args[0]!)!), type)) },
+                { "ACOS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Acos(Convert.ToDouble(argFilter(args[0]!))), type)) },
+                { "ASIN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Asin(Convert.ToDouble(argFilter(args[0]!))), type)) },
+                { "ATAN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Atan(Convert.ToDouble(argFilter(args[0]!))), type)) },
+                { "ATAN2", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Atan2(Convert.ToDouble(argFilter(args[0]!)), Convert.ToDouble(argFilter(args[1]!))), type)) },
                 { "CEILING", FunctionConfig.For((_c, args) => {
                     var arg = args[0];
                     if (arg is double)
@@ -99,9 +94,9 @@ namespace Eval.net
                         return Convert.ChangeType(Math.Ceiling((decimal)arg), type);
                     return Convert.ChangeType(Math.Ceiling(Convert.ToDouble(argFilter(arg))), type);
                 }) },
-                { "COS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Cos(Convert.ToDouble(argFilter(args[0]))), type)) },
-                { "COSH", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Cosh(Convert.ToDouble(argFilter(args[0]))), type)) },
-                { "EXP", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Exp(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "COS", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Cos(Convert.ToDouble(argFilter(args[0]!))), type)) },
+                { "COSH", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Cosh(Convert.ToDouble(argFilter(args[0]!))), type)) },
+                { "EXP", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Exp(Convert.ToDouble(argFilter(args[0]!))), type)) },
                 { "FLOOR", FunctionConfig.For((_c, args) => {
                     var arg = args[0];
                     if (arg is double)
@@ -112,20 +107,20 @@ namespace Eval.net
                 }) },
                 { "LOG", FunctionConfig.For((_c, args) => {
                     if (args.Length == 2)
-                        return Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0])), Convert.ToDouble(argFilter(args[1]))), type);
-                    return Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0]))), type);
+                        return Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0]!)), Convert.ToDouble(argFilter(args[1]!))), type);
+                    return Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0]!))), type);
                 }) },
-                { "LOG2", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0])), 2), type)) },
-                { "LOG10", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Log10(Convert.ToDouble(argFilter(args[0]))), type)) },
+                { "LOG2", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Log(Convert.ToDouble(argFilter(args[0]!)), 2), type)) },
+                { "LOG10", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Log10(Convert.ToDouble(argFilter(args[0]!))), type)) },
                 { "MAX", FunctionConfig.For((_c, args) => {
                     if (args.Length == 0) return null;
                     else
                     {
-                        dynamic v = argFilter(args[0]);
+                        dynamic v = argFilter(args[0]!)!;
                         if (v == null) return null;
                         for (var i = 0; i < args.Length; i++)
                         {
-                            dynamic v2 = argFilter(args[i]);
+                            dynamic v2 = argFilter(args[i]!)!;
                             if (v2 == null) return null;
                             if (v2.CompareTo(v) > 0)
                             {
@@ -139,11 +134,11 @@ namespace Eval.net
                     if (args.Length == 0) return null;
                     else
                     {
-                        dynamic v = argFilter(args[0]);
+                        dynamic v = argFilter(args[0]!)!;
                         if (v == null) return null;
                         for (var i = 0; i < args.Length; i++)
                         {
-                            dynamic v2 = argFilter(args[i]);
+                            dynamic v2 = argFilter(args[i]!)!;
                             if (v2 == null) return null;
                             if (v2.CompareTo(v) < 0)
                             {
@@ -162,7 +157,7 @@ namespace Eval.net
                         return Convert.ChangeType(Math.Round((decimal)arg), type);
                     return Convert.ChangeType(Math.Round(Convert.ToDouble(argFilter(arg))), type);
                 }) },
-                { "SIGN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sign((dynamic)argFilter(args[0])), type)) },
+                { "SIGN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sign((dynamic)argFilter(args[0]!)!), type)) },
                 { "SIN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sin(Convert.ToDouble(argFilter(args[0]))), type)) },
                 { "SINH", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sinh(Convert.ToDouble(argFilter(args[0]))), type)) },
                 { "SQRT", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sqrt(Convert.ToDouble(argFilter(args[0]))), type)) },

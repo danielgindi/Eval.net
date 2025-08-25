@@ -47,7 +47,7 @@ namespace Eval.net
                 if (token.Type == TokenType.Number &&
                     prevToken.Type == TokenType.Op &&
                     (prevToken.Value == "-" || prevToken.Value == "+") &&
-                    ((i > 1 && tokens[i - 2].Type == TokenType.Op && !configuration.SuffixOperators.Contains(tokens[i - 2].Value)) || i == 1)
+                    ((i > 1 && tokens[i - 2].Type == TokenType.Op && !configuration.SuffixOperators.Contains(tokens[i - 2].Value!)) || i == 1)
                     )
                 {
                     if (prevToken.Value == "-")
@@ -78,34 +78,34 @@ namespace Eval.net
             // Build the tree
             var tree = BuildTree(tokens, configuration);
 
-            return new CompiledExpression { Root = tree, Configuration = configuration };
+            return new CompiledExpression(tree, configuration);
         }
 
-        public static object Execute(string expression, EvalConfiguration configuration)
+        public static object? Execute(string expression, EvalConfiguration configuration)
         {
             return Execute(Compile(expression, configuration));
         }
 
-        public static System.Threading.Tasks.Task<object> ExecuteAsync(string expression, EvalConfiguration configuration, CancellationToken cancellationToken)
+        public static System.Threading.Tasks.Task<object?> ExecuteAsync(string expression, EvalConfiguration configuration, CancellationToken cancellationToken)
         {
             return ExecuteAsync(Compile(expression, configuration), cancellationToken);
         }
 
-        public static object Execute(CompiledExpression expression)
+        public static object? Execute(CompiledExpression expression)
         {
             return EvaluateToken(expression.Root, expression.Configuration);
         }
 
-        public static System.Threading.Tasks.Task<object> ExecuteAsync(CompiledExpression expression, CancellationToken cancellationToken)
+        public static System.Threading.Tasks.Task<object?> ExecuteAsync(CompiledExpression expression, CancellationToken cancellationToken)
         {
             return EvaluateTokenAsync(expression.Root, expression.Configuration, cancellationToken);
         }
 
-        internal static string OpAtPosition(string expression, int start, EvalConfiguration configuration)
+        internal static string? OpAtPosition(string expression, int start, EvalConfiguration configuration)
         {
-            string op = null;
+            string? op = null;
 
-            var allOperators = configuration._AllOperators;
+            var allOperators = configuration._AllOperators!;
 
             for (int j = 0, jlen = allOperators.Length; j < jlen; j++)
             {
@@ -147,10 +147,10 @@ namespace Eval.net
             return -1;
         }
 
-        internal static void LastIndexOfOpArray(List<Token> tokens, string[] ops, EvalConfiguration config, out int matchIndex, out string match)
+        internal static void LastIndexOfOpArray(List<Token> tokens, string[] ops, EvalConfiguration config, out int matchIndex, out string? match)
         {
             var pos = -1;
-            string bestMatch = null;
+            string? bestMatch = null;
 
             for (var i = 0; i < ops.Length; i++)
             {
@@ -500,8 +500,8 @@ namespace Eval.net
 
             var rootToken = tokens[isFunc ? startAt - 1 : startAt];
 
-            List<List<Token>> groups = null;
-            List<Token> sub = null;
+            List<List<Token>>? groups = null;
+            List<Token>? sub = null;
 
             if (isFunc)
             {
@@ -522,7 +522,7 @@ namespace Eval.net
                 if (isFunc && token.Type == TokenType.Comma)
                 {
                     sub = new List<Token>();
-                    groups.Add(sub);
+                    groups!.Add(sub);
                     continue;
                 }
 
@@ -547,7 +547,7 @@ namespace Eval.net
                     continue;
                 }
 
-                if (isFunc && groups.Count == 0)
+                if (isFunc && groups!.Count == 0)
                 {
                     groups.Add(sub);
                 }
@@ -569,33 +569,33 @@ namespace Eval.net
                 var cs = order[i];
 
                 int pos;
-                string op;
+                string? op;
                 LastIndexOfOpArray(tokens, cs, configuration, out pos, out op);
 
                 if (pos != -1)
                 {
                     var token = tokens[pos];
 
-                    List<Token> left;
-                    List<Token> right;
+                    List<Token>? left;
+                    List<Token>? right;
 
-                    if (prefixOps.Contains(op) || suffixOps.Contains(op))
+                    if (prefixOps.Contains(op!) || suffixOps.Contains(op!))
                     {
                         left = null;
                         right = null;
 
-                        if (prefixOps.Contains(op) && pos == 0)
+                        if (prefixOps.Contains(op!) && pos == 0)
                         {
                             right = tokens.GetRange(pos + 1, tokens.Count - (pos + 1));
                         }
-                        else if (suffixOps.Contains(op) && pos > 0)
+                        else if (suffixOps.Contains(op!) && pos > 0)
                         {
                             left = tokens.GetRange(0, pos);
                         }
 
                         if (left == null && right == null)
                         {
-                            throw new Exception("Operator " + token.Value.ToString() + " is unexpected at index " + token.Position);
+                            throw new Exception("Operator " + token.Value!.ToString() + " is unexpected at index " + token.Position);
                         }
                     }
                     else
@@ -621,7 +621,7 @@ namespace Eval.net
                     }
                     else if (left == null && op == "+")
                     {
-                        return BuildTree(right, configuration);
+                        return BuildTree(right!, configuration);
                     }
 
                     if (left != null)
@@ -648,12 +648,12 @@ namespace Eval.net
 
             if (singleToken.Type == TokenType.Group)
             {
-                singleToken = BuildTree(singleToken.Tokens, configuration);
+                singleToken = BuildTree(singleToken.Tokens!, configuration);
             }
             else if (singleToken.Type == TokenType.Call)
             {
-                singleToken.Arguments = new List<Token>();
-                for (int a = 0, arglen = singleToken.ArgumentsGroups.Count; a < arglen; a++)
+                singleToken.Arguments = new List<Token?>();
+                for (int a = 0, arglen = singleToken.ArgumentsGroups!.Count; a < arglen; a++)
                 {
                     if (singleToken.ArgumentsGroups[a].Count == 0)
                         singleToken.Arguments.Add(null);
@@ -669,7 +669,7 @@ namespace Eval.net
             return singleToken;
         }
 
-        internal static object EvaluateToken(Token token, EvalConfiguration configuration)
+        internal static object? EvaluateToken(Token token, EvalConfiguration configuration)
         {
             var value = token.Value;
 
@@ -682,6 +682,8 @@ namespace Eval.net
                     return configuration.ConvertToNumber(value);
 
                 case TokenType.Var:
+                    if (value == null)
+                        return null;
 
                     if (configuration.ConstProvider != null)
                     {
@@ -718,76 +720,76 @@ namespace Eval.net
                             }
                             else // Not (i.e. !5)
                             {
-                                return configuration.LogicalNot(EvaluateToken(token.Right, configuration));
+                                return configuration.LogicalNot(EvaluateToken(token.Right!, configuration));
                             }
 
                         case "/": // Divide
                         case "\\":
-                            return configuration.Divide(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.Divide(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "*": // Multiply
-                            return configuration.Multiply(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.Multiply(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "+": // Add
-                            return configuration.Add(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.Add(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "-": // Subtract
-                            return configuration.Subtract(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.Subtract(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "<<": // Shift left
-                            return configuration.BitShiftLeft(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.BitShiftLeft(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case ">>": // Shift right
-                            return configuration.BitShiftRight(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.BitShiftRight(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "<": // Less than
-                            return configuration.LessThan(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.LessThan(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "<=": // Less than or equals to
-                            return configuration.LessThanOrEqualsTo(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.LessThanOrEqualsTo(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case ">": // Greater than
-                            return configuration.GreaterThan(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.GreaterThan(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case ">=": // Greater than or equals to
-                            return configuration.GreaterThanOrEqualsTo(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.GreaterThanOrEqualsTo(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "==": // Equals to
                         case "=":
-                            return configuration.EqualsTo(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.EqualsTo(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "!=": // Not equals to
                         case "<>":
-                            return configuration.NotEqualsTo(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.NotEqualsTo(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "**": // Power
-                            return configuration.Pow(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.Pow(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "%": // Mod
-                            return configuration.Mod(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.Mod(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "&": // Bitwise AND
-                            return configuration.BitAnd(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.BitAnd(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "^": // Bitwise XOR
-                            return configuration.BitXor(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.BitXor(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "|": // Bitwise OR
-                            return configuration.BitOr(EvaluateToken(token.Left, configuration), EvaluateToken(token.Right, configuration));
+                            return configuration.BitOr(EvaluateToken(token.Left!, configuration), EvaluateToken(token.Right!, configuration));
 
                         case "&&": // Logical AND
                             {
-                                var res = EvaluateToken(token.Left, configuration);
+                                var res = EvaluateToken(token.Left!, configuration);
                                 if (configuration.IsTruthy(res))
-                                    return EvaluateToken(token.Right, configuration);
+                                    return EvaluateToken(token.Right!, configuration);
                                 return res;
                             }
 
                         case "||": // Logical OR
                             {
-                                var res = EvaluateToken(token.Left, configuration);
+                                var res = EvaluateToken(token.Left!, configuration);
                                 if (!configuration.IsTruthy(res))
-                                    return EvaluateToken(token.Right, configuration);
+                                    return EvaluateToken(token.Right!, configuration);
                                 return res;
                             }
 
@@ -798,7 +800,7 @@ namespace Eval.net
             throw new Exception("An unexpected error occurred while evaluating expression");
         }
 
-        internal static async System.Threading.Tasks.Task<object> EvaluateTokenAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
+        internal static async System.Threading.Tasks.Task<object?> EvaluateTokenAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
         {
             var value = token.Value;
 
@@ -811,6 +813,8 @@ namespace Eval.net
                     return configuration.ConvertToNumber(value);
 
                 case TokenType.Var:
+                    if (value == null)
+                        return null;
 
                     if (configuration.AsyncConstProvider != null)
                     {
@@ -854,76 +858,76 @@ namespace Eval.net
                             }
                             else // Not (i.e. !5)
                             {
-                                return configuration.LogicalNot(await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                                return configuration.LogicalNot(await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
                             }
 
                         case "/": // Divide
                         case "\\":
-                            return configuration.Divide(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.Divide(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "*": // Multiply
-                            return configuration.Multiply(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.Multiply(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "+": // Add
-                            return configuration.Add(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.Add(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "-": // Subtract
-                            return configuration.Subtract(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.Subtract(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "<<": // Shift left
-                            return configuration.BitShiftLeft(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.BitShiftLeft(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case ">>": // Shift right
-                            return configuration.BitShiftRight(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.BitShiftRight(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "<": // Less than
-                            return configuration.LessThan(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.LessThan(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "<=": // Less than or equals to
-                            return configuration.LessThanOrEqualsTo(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.LessThanOrEqualsTo(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case ">": // Greater than
-                            return configuration.GreaterThan(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.GreaterThan(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case ">=": // Greater than or equals to
-                            return configuration.GreaterThanOrEqualsTo(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.GreaterThanOrEqualsTo(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "==": // Equals to
                         case "=":
-                            return configuration.EqualsTo(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.EqualsTo(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "!=": // Not equals to
                         case "<>":
-                            return configuration.NotEqualsTo(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.NotEqualsTo(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "**": // Power
-                            return configuration.Pow(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.Pow(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "%": // Mod
-                            return configuration.Mod(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.Mod(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "&": // Bitwise AND
-                            return configuration.BitAnd(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.BitAnd(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "^": // Bitwise XOR
-                            return configuration.BitXor(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.BitXor(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "|": // Bitwise OR
-                            return configuration.BitOr(await EvaluateTokenAsync(token.Left, configuration, cancellationToken), await EvaluateTokenAsync(token.Right, configuration, cancellationToken));
+                            return configuration.BitOr(await EvaluateTokenAsync(token.Left!, configuration, cancellationToken), await EvaluateTokenAsync(token.Right!, configuration, cancellationToken));
 
                         case "&&": // Logical AND
                             {
-                                var res = await EvaluateTokenAsync(token.Left, configuration, cancellationToken);
+                                var res = await EvaluateTokenAsync(token.Left!, configuration, cancellationToken);
                                 if (configuration.IsTruthy(res))
-                                    return await EvaluateTokenAsync(token.Right, configuration, cancellationToken);
+                                    return await EvaluateTokenAsync(token.Right!, configuration, cancellationToken);
                                 return res;
                             }
 
                         case "||": // Logical OR
                             {
-                                var res = await EvaluateTokenAsync(token.Left, configuration, cancellationToken);
+                                var res = await EvaluateTokenAsync(token.Left!, configuration, cancellationToken);
                                 if (!configuration.IsTruthy(res))
-                                    return await EvaluateTokenAsync(token.Right, configuration, cancellationToken);
+                                    return await EvaluateTokenAsync(token.Right!, configuration, cancellationToken);
                                 return res;
                             }
 
@@ -934,35 +938,39 @@ namespace Eval.net
             throw new Exception("An unexpected error occurred while evaluating expression");
         }
 
-        private static object[] EvaluateArgs(Token token, EvalConfiguration configuration)
+        private static object?[] EvaluateArgs(Token token, EvalConfiguration configuration)
         {
-            var args = new List<object>();
-            for (var i = 0; i < token.Arguments.Count; i++)
+            var args = new List<object?>();
+            for (var i = 0; i < token.Arguments!.Count; i++)
             {
-                if (token.Arguments[i] == null)
+                var arg = token.Arguments[i];
+
+                if (arg == null)
                 {
                     args.Add(null);
                 }
                 else
                 {
-                    args.Add(EvaluateToken(token.Arguments[i], configuration));
+                    args.Add(EvaluateToken(arg, configuration));
                 }
             }
             return args.ToArray();
         }
 
-        private static async System.Threading.Tasks.Task<object[]> EvaluateArgsAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
+        private static async System.Threading.Tasks.Task<object?[]> EvaluateArgsAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
         {
-            var args = new List<object>();
-            for (var i = 0; i < token.Arguments.Count; i++)
+            var args = new List<object?>();
+            for (var i = 0; i < token.Arguments!.Count; i++)
             {
-                if (token.Arguments[i] == null)
+                var arg = token.Arguments[i];
+
+                if (arg == null)
                 {
                     args.Add(null);
                 }
                 else
                 {
-                    args.Add(await EvaluateTokenAsync(token.Arguments[i], configuration, cancellationToken));
+                    args.Add(await EvaluateTokenAsync(arg, configuration, cancellationToken));
                 }
             }
             return args.ToArray();
@@ -971,16 +979,17 @@ namespace Eval.net
         private static ArgResolver[] EvaluateArgsLazy(Token token, EvalConfiguration configuration)
         {
             var args = new List<ArgResolver>();
-            for (var i = 0; i < token.Arguments.Count; i++)
+            for (var i = 0; i < token.Arguments!.Count; i++)
             {
-                if (token.Arguments[i] == null)
+                var arg = token.Arguments[i];
+
+                if (arg == null)
                 {
                     args.Add(() => null);
                 }
                 else
                 {
-                    int argIndex = i;
-                    args.Add(() => EvaluateToken(token.Arguments[argIndex], configuration));
+                    args.Add(() => EvaluateToken(arg, configuration));
                 }
             }
             return args.ToArray();
@@ -989,27 +998,29 @@ namespace Eval.net
         private static ArgResolverAsync[] EvaluateArgsLazyAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
         {
             var args = new List<ArgResolverAsync>();
-            for (var i = 0; i < token.Arguments.Count; i++)
+            for (var i = 0; i < token.Arguments!.Count; i++)
             {
-                if (token.Arguments[i] == null)
+                var arg = token.Arguments[i];
+
+                if (arg == null)
                 {
-                    args.Add(() => null);
+                    args.Add(() => System.Threading.Tasks.Task.FromResult<object?>(null));
                 }
                 else
                 {
                     int argIndex = i;
-                    args.Add(() => EvaluateTokenAsync(token.Arguments[argIndex], configuration, cancellationToken));
+                    args.Add(() => EvaluateTokenAsync(arg, configuration, cancellationToken));
                 }
             }
             return args.ToArray();
         }
 
-        internal static object EvaluateFunction(Token token, EvalConfiguration configuration)
+        internal static object? EvaluateFunction(Token token, EvalConfiguration configuration)
         {
             var fname = token.Value;
 
-            if (configuration.Functions.TryGetValue(fname, out var f) ||
-                configuration.Functions.TryGetValue(fname.ToUpperInvariant(), out f) ||
+            if (configuration.Functions.TryGetValue(fname!, out var f) ||
+                configuration.Functions.TryGetValue(fname!.ToUpperInvariant(), out f) ||
                 configuration.GenericFunctions.TryGetValue(fname, out f) ||
                 configuration.GenericFunctions.TryGetValue(fname.ToUpperInvariant(), out f))
             {
@@ -1023,12 +1034,12 @@ namespace Eval.net
             throw new Exception("Function named \"" + fname + "\" was not found");
         }
 
-        internal static async System.Threading.Tasks.Task<object> EvaluateFunctionAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
+        internal static async System.Threading.Tasks.Task<object?> EvaluateFunctionAsync(Token token, EvalConfiguration configuration, CancellationToken cancellationToken)
         {
             var fname = token.Value;
 
-            if (configuration.Functions.TryGetValue(fname, out var f) ||
-                configuration.Functions.TryGetValue(fname.ToUpperInvariant(), out f) ||
+            if (configuration.Functions.TryGetValue(fname!, out var f) ||
+                configuration.Functions.TryGetValue(fname!.ToUpperInvariant(), out f) ||
                 configuration.GenericFunctions.TryGetValue(fname, out f) ||
                 configuration.GenericFunctions.TryGetValue(fname.ToUpperInvariant(), out f))
             {

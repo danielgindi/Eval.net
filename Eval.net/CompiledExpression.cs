@@ -5,20 +5,21 @@ namespace Eval.net
 {
     public class CompiledExpression
     {
-        internal CompiledExpression()
+        internal CompiledExpression(Token root, EvalConfiguration configuration)
         {
-
+            this.Root = root;
+            this.Configuration = configuration;
         }
 
         internal Token Root;
         public EvalConfiguration Configuration { get; set; }
 
-        public object Execute()
+        public object? Execute()
         {
             return Evaluator.Execute(this);
         }
 
-        public System.Threading.Tasks.Task<object> ExecuteAsync(CancellationToken cancellationToken)
+        public System.Threading.Tasks.Task<object?> ExecuteAsync(CancellationToken cancellationToken)
         {
             return Evaluator.ExecuteAsync(this, cancellationToken);
         }
@@ -69,14 +70,14 @@ namespace Eval.net
                     break;
 
                 case TokenType.Group:
-                    foreach (var t in token.Tokens)
+                    foreach (var t in token.Tokens!)
                     {
                         TraverseGetVariables(t, variables);
                     }
                     break;
 
                 case TokenType.Call:
-                    foreach (var t in token.Arguments)
+                    foreach (var t in token.Arguments!)
                     {
                         if (t == null)
                             continue;
