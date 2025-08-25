@@ -104,34 +104,71 @@ namespace Eval.net
             return Convert.ChangeType(val, NumericType);
         }
 
-        public virtual bool LessThan(object a, object b)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns><c>int.MaxValue</c> if not comparable, -1 for <paramref name="a"/> less than <paramref name="b"/>, 1 for <paramref name="a"/> greater than <paramref name="b"/>, 0 if equal</returns>
+        public virtual int Compare(object? a, object? b)
         {
-            return ((IComparable)a).CompareTo(b) < 0;
+            if (a == null && b == null) return 0;
+            if (a == null) return -1;
+            if (b == null) return 1;
+
+            if (a is IComparable && b is IComparable)
+                return ((IComparable)a).CompareTo(b);
+
+            if (object.Equals(a, b))
+                return 0;
+
+            if (!(a is IComparable))
+                a = a.ToString();
+
+            if (!(b is IComparable))
+                b = b.ToString();
+
+            var res = (a as IComparable)?.CompareTo(b);
+            if (res != null)
+                return res.Value;
+
+            return int.MaxValue;
         }
 
-        public virtual bool LessThanOrEqualsTo(object a, object b)
+        public virtual bool LessThan(object? a, object? b)
         {
-            return ((IComparable)a).CompareTo(b) <= 0;
+            return Compare(a, b) < 0;
         }
 
-        public virtual bool GreaterThan(object a, object b)
+        public virtual bool LessThanOrEqualsTo(object? a, object? b)
         {
-            return ((IComparable)a).CompareTo(b) > 0;
+            return Compare(a, b) <= 0;
         }
 
-        public virtual bool GreaterThanOrEqualsTo(object a, object b)
+        public virtual bool GreaterThan(object? a, object? b)
         {
-            return ((IComparable)a).CompareTo(b) >= 0;
+            var res = Compare(a, b);
+            if (res == int.MaxValue)
+                return false;
+            return res > 0;
         }
 
-        public virtual bool EqualsTo(object a, object b)
+        public virtual bool GreaterThanOrEqualsTo(object? a, object? b)
+        {
+            var res = Compare(a, b);
+            if (res == int.MaxValue)
+                return false;
+            return res >= 0;
+        }
+
+        public virtual bool EqualsTo(object? a, object? b)
         {
             if (a == null && b == null) return true;
             if ((a == null) != (b == null)) return false;
-            return Object.Equals(a, b);
+            return Compare(a, b) == 0;
         }
 
-        public virtual bool NotEqualsTo(object a, object b)
+        public virtual bool NotEqualsTo(object? a, object? b)
         {
             return !EqualsTo(a, b);
         }
