@@ -44,6 +44,7 @@
     <RepositoryUrl>https://github.com/danielgindi/Eval.net</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<Description>A lightweight, dependency-free library that empowers .NET developers to easily parse and evaluate simple expressions at runtime.</Description>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
