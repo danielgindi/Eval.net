@@ -15,6 +15,50 @@ namespace UnitTests
             var config = EvalConfiguration.DoubleConfiguration;
 
             Assert.AreEqual(
+                (bool)Evaluator.Execute("1<2.0", config),
+                true);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("1<=2.0", config),
+                true);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("1>2.0", config),
+                false);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("1>=2.0", config),
+                false);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("2>1.0", config),
+                true);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("2.0>=1", config),
+                true);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("2<1.0", config),
+                false);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("2<=1", config),
+                false);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("2==1", config),
+                false);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("1==1", config),
+                true);
+
+            Assert.AreEqual(
+                (bool)Evaluator.Execute("1==1.0", config),
+                true);
+
+            Assert.AreEqual(
                 (double)Evaluator.Execute("12+45*10", config),
                 (double)12 + 45 * 10);
 
