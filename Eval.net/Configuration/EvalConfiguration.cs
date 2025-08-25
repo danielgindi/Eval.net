@@ -29,7 +29,7 @@ namespace Eval.net
         /// </summary>
         /// <param name="varname"></param>
         /// <returns></returns>
-        public delegate object ConstProviderDelegate(string varname);
+        public delegate object? ConstProviderDelegate(string varname);
         public delegate System.Threading.Tasks.Task<object?> AsyncConstProviderDelegate(CancellationToken cancellationToken, string varname);
 
         public static readonly EvalConfiguration FloatConfiguration = new EvalConfiguration(typeof(float));
