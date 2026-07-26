@@ -86,7 +86,7 @@ namespace Eval.net
                 { "ASIN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Asin(Convert.ToDouble(argFilter(args[0]!))), type)) },
                 { "ATAN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Atan(Convert.ToDouble(argFilter(args[0]!))), type)) },
                 { "ATAN2", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Atan2(Convert.ToDouble(argFilter(args[0]!)), Convert.ToDouble(argFilter(args[1]!))), type)) },
-                { "CEILING", FunctionConfig.For((_c, args) => {
+                { "CEIL", FunctionConfig.For((_c, args) => {
                     var arg = args[0];
                     if (arg is double)
                         return Convert.ChangeType(Math.Ceiling((double)arg), type);
@@ -163,7 +163,7 @@ namespace Eval.net
                 { "SQRT", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Sqrt(Convert.ToDouble(argFilter(args[0]))), type)) },
                 { "TAN", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Tan(Convert.ToDouble(argFilter(args[0]))), type)) },
                 { "TANH", FunctionConfig.For((_c, args) => Convert.ChangeType(Math.Tanh(Convert.ToDouble(argFilter(args[0]))), type)) },
-                { "TRUNCATE", FunctionConfig.For((_c, args) => {
+                { "TRUNC", FunctionConfig.For((_c, args) => {
                     var arg = args[0];
                     if (arg is double)
                         return Convert.ChangeType(Math.Truncate((double)arg), type);
